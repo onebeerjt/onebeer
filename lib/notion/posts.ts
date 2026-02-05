@@ -41,6 +41,18 @@ type NotionBlockResponse = {
   next_cursor?: string | null;
 };
 
+export type NotionDebugInfo = {
+  hasToken: boolean;
+  hasDatabaseId: boolean;
+  normalizedDatabaseId: string | null;
+  queryOk: boolean;
+  status?: number;
+  code?: string;
+  message?: string;
+  postCount?: number;
+  postTitles?: string[];
+};
+
 function getNotionEnv() {
   const token = process.env.NOTION_TOKEN;
   const databaseIdRaw = process.env.NOTION_DATABASE_ID;
@@ -237,6 +249,63 @@ async function queryDatabase(): Promise<BlogPostSummary[]> {
     .filter(isPublished)
     .map(toSummary)
     .filter((item) => item.title.trim().length > 0);
+}
+
+export async function getNotionDebugInfo(): Promise<NotionDebugInfo> {
+  const token = process.env.NOTION_TOKEN ?? "";
+  const databaseIdRaw = process.env.NOTION_DATABASE_ID ?? "";
+  const normalized = databaseIdRaw ? normalizeDatabaseId(databaseIdRaw) : null;
+
+  if (!token || !databaseIdRaw || !normalized) {
+    return {
+      hasToken: Boolean(token),
+      hasDatabaseId: Boolean(databaseIdRaw),
+      normalizedDatabaseId: normalized,
+      queryOk: false,
+      code: "missing_env_or_invalid_database_id",
+      message: "Set NOTION_TOKEN and NOTION_DATABASE_ID (database URL or ID)."
+    };
+  }
+
+  const response = await fetch(`https://api.notion.com/v1/databases/${normalized}/query`, {
+    method: "POST",
+    headers: notionHeaders(token),
+    body: JSON.stringify({
+      page_size: 10,
+      sorts: [
+        {
+          timestamp: "last_edited_time",
+          direction: "descending"
+        }
+      ]
+    }),
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => ({}))) as { code?: string; message?: string };
+    return {
+      hasToken: true,
+      hasDatabaseId: true,
+      normalizedDatabaseId: normalized,
+      queryOk: false,
+      status: response.status,
+      code: body.code ?? "notion_query_failed",
+      message: body.message ?? "Notion query failed."
+    };
+  }
+
+  const data = (await response.json()) as NotionQueryResponse;
+  const posts = (data.results ?? []).filter(isPublished).map(toSummary);
+
+  return {
+    hasToken: true,
+    hasDatabaseId: true,
+    normalizedDatabaseId: normalized,
+    queryOk: true,
+    postCount: posts.length,
+    postTitles: posts.map((post) => post.title).slice(0, 10)
+  };
 }
 
 function extractBlockText(block: NotionBlock) {
