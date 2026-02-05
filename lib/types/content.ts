@@ -26,4 +26,5 @@ export type LatestFilm = {
   letterboxdUrl: string;
   watchedAt?: string;
   posterUrl?: string;
+  reviewSnippet?: string;
 };

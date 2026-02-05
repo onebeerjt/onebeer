@@ -36,29 +36,32 @@ function parseTitle(rawTitle: string) {
   };
 }
 
-export async function getLatestFilm(): Promise<LatestFilm | null> {
-  const rssUrl = process.env.LETTERBOXD_RSS_URL;
-
-  if (!rssUrl) {
-    return null;
+function extractPosterUrl(item: string) {
+  const mediaContent = item.match(/<media:content[^>]*url="([^"]+)"/i)?.[1];
+  if (mediaContent) {
+    return mediaContent;
   }
 
-  const response = await fetch(rssUrl, {
-    next: { revalidate: 300 }
-  });
+  const img = item.match(/<img[^>]*src="([^"]+)"/i)?.[1];
+  return img || undefined;
+}
 
-  if (!response.ok) {
-    return null;
+function extractReviewSnippet(item: string) {
+  const description = extractTag(item, "description");
+  if (!description) {
+    return undefined;
   }
 
-  const xml = await response.text();
-  const itemMatch = xml.match(/<item>[\s\S]*?<\/item>/i);
-
-  if (!itemMatch) {
-    return null;
+  const clean = decodeHtml(stripTags(description));
+  if (!clean) {
+    return undefined;
   }
 
-  const item = itemMatch[0];
+  const clipped = clean.length > 240 ? `${clean.slice(0, 240).trim()}...` : clean;
+  return clipped;
+}
+
+function parseItem(item: string): LatestFilm | null {
   const link = extractTag(item, "link");
   const titleRaw = extractTag(item, "title");
   const pubDate = extractTag(item, "pubDate");
@@ -73,6 +76,46 @@ export async function getLatestFilm(): Promise<LatestFilm | null> {
     title: parsed.title,
     year: parsed.year,
     letterboxdUrl: link,
-    watchedAt: pubDate ? new Date(pubDate).toISOString() : undefined
+    watchedAt: pubDate ? new Date(pubDate).toISOString() : undefined,
+    posterUrl: extractPosterUrl(item),
+    reviewSnippet: extractReviewSnippet(item)
   };
+}
+
+async function fetchFeed(): Promise<LatestFilm[]> {
+  const rssUrl = process.env.LETTERBOXD_RSS_URL;
+
+  if (!rssUrl) {
+    return [];
+  }
+
+  const response = await fetch(rssUrl, {
+    next: { revalidate: 300 }
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const xml = await response.text();
+  const items = xml.match(/<item>[\s\S]*?<\/item>/gi) ?? [];
+
+  return items
+    .map(parseItem)
+    .filter((item): item is LatestFilm => item !== null)
+    .sort((a, b) => {
+      const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
+      const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
+      return bTime - aTime;
+    });
+}
+
+export async function getLatestFilm(): Promise<LatestFilm | null> {
+  const films = await fetchFeed();
+  return films[0] ?? null;
+}
+
+export async function getRecentFilms(limit = 8): Promise<LatestFilm[]> {
+  const films = await fetchFeed();
+  return films.slice(0, limit);
 }

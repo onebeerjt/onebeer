@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
-import { getLatestFilm } from "@/lib/letterboxd/latest-film";
+import { getLatestFilm, getRecentFilms } from "@/lib/letterboxd/latest-film";
 import { getPublishedPosts } from "@/lib/notion/posts";
 
 export const revalidate = 120;
@@ -41,10 +41,11 @@ function formatPlayedAt(value: string | undefined) {
 }
 
 export default async function Home() {
-  const [posts, latestFilm, recentTracks] = await Promise.all([
+  const [posts, latestFilm, recentTracks, recentFilms] = await Promise.all([
     getPublishedPosts(),
     getLatestFilm(),
-    getRecentTracks(10)
+    getRecentTracks(10),
+    getRecentFilms(8)
   ]);
   const latestPost = posts[0];
 
@@ -101,7 +102,11 @@ export default async function Home() {
                 {latestFilm.title}
                 {latestFilm.year ? ` (${latestFilm.year})` : ""}
               </a>
-              <p className="text-sm leading-relaxed text-zinc-700">From Letterboxd activity.</p>
+              {latestFilm.reviewSnippet ? (
+                <p className="text-sm leading-relaxed text-zinc-700">{latestFilm.reviewSnippet}</p>
+              ) : (
+                <p className="text-sm leading-relaxed text-zinc-700">From Letterboxd activity.</p>
+              )}
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-zinc-700">
@@ -109,6 +114,53 @@ export default async function Home() {
             </p>
           )}
         </article>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Movies</p>
+          <h2 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-zinc-900">Recent films</h2>
+        </div>
+
+        {recentFilms.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-6">
+            <p className="text-sm leading-relaxed text-zinc-700">No recent Letterboxd films found yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recentFilms.map((film, index) => (
+              <article
+                key={`${film.letterboxdUrl}-${index}`}
+                className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm"
+              >
+                <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-zinc-200 bg-zinc-100">
+                  {film.posterUrl ? (
+                    <div
+                      className="h-full w-full bg-cover bg-center"
+                      style={{ backgroundImage: `url(${film.posterUrl})` }}
+                      aria-label={`${film.title} poster`}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <a
+                    href={film.letterboxdUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="truncate text-sm font-semibold text-zinc-900 hover:underline"
+                  >
+                    {film.title}
+                    {film.year ? ` (${film.year})` : ""}
+                  </a>
+                  <p className="text-xs text-zinc-500">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
+                  {film.reviewSnippet ? <p className="mt-1 text-sm text-zinc-700">{film.reviewSnippet}</p> : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">
