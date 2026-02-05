@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
-import { getLatestFilm, getRecentFilms } from "@/lib/letterboxd/latest-film";
+import { getRecentFilms } from "@/lib/letterboxd/latest-film";
 import { getPublishedPosts } from "@/lib/notion/posts";
 
 export const revalidate = 120;
@@ -43,14 +43,14 @@ function formatPlayedAt(value: string | undefined) {
 }
 
 export default async function Home() {
-  const [posts, latestFilm, recentTracks, recentFilms] = await Promise.all([
+  const [posts, recentTracks, recentFilms] = await Promise.all([
     getPublishedPosts(),
-    getLatestFilm(),
     getRecentTracks(24),
     getRecentFilms(24)
   ]);
   const latestPost = posts[0];
   const recentPosts = posts.slice(0, 3);
+  const recentTwoFilms = recentFilms.slice(0, 2);
 
   return (
     <div className="space-y-10">
@@ -99,27 +99,39 @@ export default async function Home() {
         </article>
 
         <article className="paper-card p-5">
-          <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest film</h2>
-          {latestFilm ? (
-            <div className="mt-2 space-y-2">
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
-                {latestFilm.watchedAt ? formatDate(latestFilm.watchedAt) : "Recently logged"}
-              </p>
-              <a
-                href={latestFilm.letterboxdUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
-              >
-                {latestFilm.title}
-                {latestFilm.year ? ` (${latestFilm.year})` : ""}
-                {latestFilm.rating ? ` - ${latestFilm.rating}` : ""}
-              </a>
-              {latestFilm.reviewSnippet ? (
-                <p className="text-sm leading-relaxed text-[#4f443b]">{latestFilm.reviewSnippet}</p>
-              ) : (
-                <p className="text-sm leading-relaxed text-[#4f443b]">From Letterboxd activity.</p>
-              )}
+          <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest films</h2>
+          {recentTwoFilms.length > 0 ? (
+            <div className="mt-2 space-y-3">
+              {recentTwoFilms.map((film, index) => (
+                <div key={`${film.letterboxdUrl}-${index}`} className="flex items-center gap-3 border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
+                  <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+                    {film.posterUrl ? (
+                      <div
+                        className="h-full w-full bg-cover bg-center"
+                        style={{ backgroundImage: `url(${film.posterUrl})` }}
+                        aria-label={`${film.title} poster`}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <a
+                      href={film.letterboxdUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="truncate text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
+                    >
+                      {film.title}
+                      {film.year ? ` (${film.year})` : ""}
+                      {film.rating ? ` - ${film.rating}` : ""}
+                    </a>
+                    <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                      {film.watchedAt ? formatDate(film.watchedAt) : "Recently logged"}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">

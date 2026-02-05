@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     template: "%s | onebeer"
   },
   description: "What JT has been writing, watching, and listening to lately.",
+  icons: {
+    icon: "/favicon.svg"
+  },
   openGraph: {
     title: "onebeer",
     description: "A lightweight personal hub for JT's latest writing, films, and music.",
@@ -31,10 +34,10 @@ export default function RootLayout({
           <header className="mb-8 border-b-2 border-[#cdbfa6] pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <Link
-                  href="/"
-                  className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]"
-                >
+                <Link href="/" className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
+                  <span className="mr-2 align-middle text-3xl" aria-hidden>
+                    🍺
+                  </span>
                   onebeer
                 </Link>
                 <p className="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
@@ -53,7 +56,7 @@ export default function RootLayout({
           </header>
           <main className="flex-1">{children}</main>
           <footer className="mt-16 border-t-2 border-[#cdbfa6] pt-6 text-sm text-[#6a5f55]">
-            <p>Built with Next.js + Notion-first publishing workflow.</p>
+            <p>Miami based, cerveza fueled, vibe coded.</p>
           </footer>
         </div>
       </body>
