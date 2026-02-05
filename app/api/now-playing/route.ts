@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
+import { getNowPlaying } from "@/lib/lastfm/now-playing";
 
 export async function GET() {
+  const track = await getNowPlaying();
+
   return NextResponse.json(
     {
-      ok: false,
-      message: "Now Playing integration is not configured yet."
+      ok: true,
+      data: track
     },
     {
-      status: 501,
       headers: {
         "Cache-Control": "no-store"
       }

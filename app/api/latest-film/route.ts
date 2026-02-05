@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
+import { getLatestFilm } from "@/lib/letterboxd/latest-film";
 
 export async function GET() {
+  const film = await getLatestFilm();
+
   return NextResponse.json(
     {
-      ok: false,
-      message: "Latest Film integration is not configured yet."
+      ok: true,
+      data: film
     },
     {
-      status: 501,
       headers: {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=300"
       }
