@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getLatestFilm } from "@/lib/letterboxd/latest-film";
 import { getPublishedPosts } from "@/lib/notion/posts";
 
-export const revalidate = 300;
+export const revalidate = 120;
 
 function formatDate(value: string | null | undefined) {
   if (!value) {
@@ -21,8 +22,30 @@ function formatDate(value: string | null | undefined) {
   }).format(date);
 }
 
+function formatPlayedAt(value: string | undefined) {
+  if (!value) {
+    return "Playing now";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Recently";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
 export default async function Home() {
-  const [posts, latestFilm] = await Promise.all([getPublishedPosts(), getLatestFilm()]);
+  const [posts, latestFilm, recentTracks] = await Promise.all([
+    getPublishedPosts(),
+    getLatestFilm(),
+    getRecentTracks(10)
+  ]);
   const latestPost = posts[0];
 
   return (
@@ -86,6 +109,47 @@ export default async function Home() {
             </p>
           )}
         </article>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Music</p>
+          <h2 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-zinc-900">Recent tracks</h2>
+        </div>
+
+        {recentTracks.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-6">
+            <p className="text-sm leading-relaxed text-zinc-700">
+              No recent Last.fm tracks found yet. Check your Last.fm username and API key.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recentTracks.map((track, index) => (
+              <article
+                key={`${track.track}-${track.artist}-${track.playedAt ?? index}`}
+                className="flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-3 shadow-sm"
+              >
+                <div className="h-14 w-14 flex-none overflow-hidden rounded-md border border-zinc-200 bg-zinc-100">
+                  {track.albumArt ? (
+                    <div
+                      className="h-full w-full bg-cover bg-center"
+                      style={{ backgroundImage: `url(${track.albumArt})` }}
+                      aria-label={`${track.album ?? track.track} artwork`}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-xs text-zinc-500">No Art</div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-zinc-900">{track.track}</p>
+                  <p className="truncate text-sm text-zinc-700">{track.artist}</p>
+                  <p className="text-xs text-zinc-500">{track.isPlaying ? "Now playing" : formatPlayedAt(track.playedAt)}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

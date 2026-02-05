@@ -14,6 +14,7 @@ export type NowPlayingTrack = {
   track: string;
   artist: string;
   album?: string;
+  albumArt?: string;
   isPlaying: boolean;
   url?: string;
   playedAt?: string;
