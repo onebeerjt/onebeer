@@ -43,13 +43,39 @@ type NotionBlockResponse = {
 
 function getNotionEnv() {
   const token = process.env.NOTION_TOKEN;
-  const databaseId = process.env.NOTION_DATABASE_ID;
+  const databaseIdRaw = process.env.NOTION_DATABASE_ID;
 
-  if (!token || !databaseId) {
+  if (!token || !databaseIdRaw) {
+    return null;
+  }
+
+  const databaseId = normalizeDatabaseId(databaseIdRaw);
+  if (!databaseId) {
     return null;
   }
 
   return { token, databaseId };
+}
+
+function normalizeDatabaseId(input: string) {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  // Accept a full Notion URL or a plain database id (with or without dashes).
+  const source = trimmed.includes("notion.so") ? decodeURIComponent(trimmed) : trimmed;
+  const idMatch = source.match(/[0-9a-fA-F]{32}/) ?? source.match(/[0-9a-fA-F-]{36}/);
+  if (!idMatch) {
+    return null;
+  }
+
+  const compact = idMatch[0].replace(/-/g, "");
+  if (compact.length !== 32) {
+    return null;
+  }
+
+  return `${compact.slice(0, 8)}-${compact.slice(8, 12)}-${compact.slice(12, 16)}-${compact.slice(16, 20)}-${compact.slice(20)}`;
 }
 
 function notionHeaders(token: string) {
