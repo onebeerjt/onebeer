@@ -89,7 +89,20 @@ export function NowPlayingBar() {
   return (
     <div className="w-full border-b-2 border-[#5d1a1a] bg-[#201818] px-4 py-2 text-xs text-[#f2e9d8] sm:px-6">
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
-        <p className="font-mono font-medium uppercase tracking-[0.16em]">Now playing</p>
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 flex-none overflow-hidden rounded-md border border-[#5d1a1a] bg-[#2b1f1f]">
+            {track?.albumArt ? (
+              <div
+                className="h-full w-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${track.albumArt})` }}
+                aria-label={`${track.album ?? track.track} artwork`}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-[10px] text-[#d7c9b2]">No Art</div>
+            )}
+          </div>
+          <p className="font-mono font-medium uppercase tracking-[0.16em]">Now playing</p>
+        </div>
         <p className="truncate font-mono text-[#d7c9b2]">{loading ? "Loading..." : formatLabel(track)}</p>
       </div>
     </div>

@@ -165,12 +165,12 @@ export default async function Home() {
             {recentFilms.map((film, index) => (
               <article
                 key={`${film.letterboxdUrl}-${index}`}
-                className="paper-card flex items-start gap-4 p-3"
+                className="paper-card group relative flex items-start gap-4 p-3 transition-transform duration-200 hover:-translate-y-0.5"
               >
                 <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
                   {film.posterUrl ? (
                     <div
-                      className="h-full w-full bg-cover bg-center"
+                      className="h-full w-full bg-cover bg-center transition-transform duration-200 group-hover:scale-110"
                       style={{ backgroundImage: `url(${film.posterUrl})` }}
                       aria-label={`${film.title} poster`}
                     />
@@ -192,6 +192,14 @@ export default async function Home() {
                   <p className="font-mono text-xs text-[#7f7468]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
                   {film.reviewSnippet ? <p className="mt-1 text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
                 </div>
+                {film.reviewSnippet ? (
+                  <div className="pointer-events-none absolute left-4 top-1/2 z-10 hidden w-[80%] -translate-y-1/2 rounded-lg border border-[#cdbfa6] bg-[#fff9ef] p-3 shadow-lg group-hover:block md:left-auto md:right-4 md:w-[65%]">
+                    <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                      {film.rating ? `Rating ${film.rating}` : "Review"} · {film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}
+                    </p>
+                    <p className="mt-1 text-sm text-[#4f443b]">{film.reviewSnippet}</p>
+                  </div>
+                ) : null}
               </article>
             ))}
           </div>
