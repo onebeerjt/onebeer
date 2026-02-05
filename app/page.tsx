@@ -165,12 +165,12 @@ export default async function Home() {
             {recentFilms.map((film, index) => (
               <article
                 key={`${film.letterboxdUrl}-${index}`}
-                className="paper-card group relative flex items-start gap-4 p-3 transition-transform duration-200 hover:-translate-y-0.5"
+                className="paper-card group relative flex items-start gap-4 p-3 transition-transform duration-200 md:hover:-translate-y-1 md:hover:scale-[1.02] md:hover:shadow-xl"
               >
                 <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
                   {film.posterUrl ? (
                     <div
-                      className="h-full w-full bg-cover bg-center transition-transform duration-200 group-hover:scale-110"
+                      className="h-full w-full bg-cover bg-center transition-transform duration-200 md:group-hover:scale-110"
                       style={{ backgroundImage: `url(${film.posterUrl})` }}
                       aria-label={`${film.title} poster`}
                     />
@@ -193,11 +193,29 @@ export default async function Home() {
                   {film.reviewSnippet ? <p className="mt-1 text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
                 </div>
                 {film.reviewSnippet ? (
-                  <div className="pointer-events-none absolute left-4 top-1/2 z-10 hidden w-[80%] -translate-y-1/2 rounded-lg border border-[#cdbfa6] bg-[#fff9ef] p-3 shadow-lg group-hover:block md:left-auto md:right-4 md:w-[65%]">
-                    <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
-                      {film.rating ? `Rating ${film.rating}` : "Review"} · {film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}
-                    </p>
-                    <p className="mt-1 text-sm text-[#4f443b]">{film.reviewSnippet}</p>
+                  <div className="pointer-events-none absolute inset-0 hidden rounded-lg border border-[#cdbfa6] bg-[#fff9ef] p-4 shadow-2xl md:flex md:items-center md:gap-4 md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100">
+                    <div className="h-28 w-20 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+                      {film.posterUrl ? (
+                        <div
+                          className="h-full w-full bg-cover bg-center"
+                          style={{ backgroundImage: `url(${film.posterUrl})` }}
+                          aria-label={`${film.title} poster`}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[#1f1a16]">
+                        {film.title}
+                        {film.year ? ` (${film.year})` : ""}
+                        {film.rating ? ` - ${film.rating}` : ""}
+                      </p>
+                      <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                        {film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}
+                      </p>
+                      <p className="mt-2 text-sm text-[#4f443b]">{film.reviewSnippet}</p>
+                    </div>
                   </div>
                 ) : null}
               </article>
