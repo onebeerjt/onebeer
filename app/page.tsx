@@ -18,7 +18,8 @@ function formatDate(value: string | null | undefined) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
+    timeZone: "America/New_York"
   }).format(date);
 }
 
@@ -36,7 +37,8 @@ function formatPlayedAt(value: string | undefined) {
     month: "short",
     day: "numeric",
     hour: "numeric",
-    minute: "2-digit"
+    minute: "2-digit",
+    timeZone: "America/New_York"
   }).format(date);
 }
 
