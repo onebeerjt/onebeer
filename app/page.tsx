@@ -46,8 +46,8 @@ export default async function Home() {
   const [posts, latestFilm, recentTracks, recentFilms] = await Promise.all([
     getPublishedPosts(),
     getLatestFilm(),
-    getRecentTracks(10),
-    getRecentFilms(8)
+    getRecentTracks(24),
+    getRecentFilms(24)
   ]);
   const latestPost = posts[0];
 
@@ -129,7 +129,7 @@ export default async function Home() {
             <p className="text-sm leading-relaxed text-[#4f443b]">No recent Letterboxd films found yet.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-2">
             {recentFilms.map((film, index) => (
               <article
                 key={`${film.letterboxdUrl}-${index}`}
@@ -178,7 +178,7 @@ export default async function Home() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="grid gap-2 md:grid-cols-2">
             {recentTracks.map((track, index) => (
               <article
                 key={`${track.track}-${track.artist}-${track.playedAt ?? index}`}
