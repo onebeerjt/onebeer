@@ -37,6 +37,9 @@ function extractTag(source: string, tag: string) {
 
 function parseTitle(rawTitle: string) {
   const cleaned = cleanupText(rawTitle);
+  const ratingMatch = cleaned.match(/\s-\s*([★\u2605]+(?:½)?)\s*$/u);
+  const rating = ratingMatch?.[1];
+
   const withoutPrefix = cleaned
     .replace(/^.+\s(rewatched|reviewed|watched)\s/i, "")
     .replace(/^.+\slogged\s/i, "")
@@ -49,7 +52,8 @@ function parseTitle(rawTitle: string) {
 
   return {
     title: title || cleaned,
-    year
+    year,
+    rating
   };
 }
 
@@ -92,6 +96,7 @@ function parseItem(item: string): LatestFilm | null {
   return {
     title: parsed.title,
     year: parsed.year,
+    rating: parsed.rating,
     letterboxdUrl: link,
     watchedAt: pubDate ? new Date(pubDate).toISOString() : undefined,
     posterUrl: extractPosterUrl(item),

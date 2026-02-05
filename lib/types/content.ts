@@ -23,6 +23,7 @@ export type NowPlayingTrack = {
 export type LatestFilm = {
   title: string;
   year?: string;
+  rating?: string;
   letterboxdUrl: string;
   watchedAt?: string;
   posterUrl?: string;

@@ -103,6 +103,7 @@ export default async function Home() {
               >
                 {latestFilm.title}
                 {latestFilm.year ? ` (${latestFilm.year})` : ""}
+                {latestFilm.rating ? ` - ${latestFilm.rating}` : ""}
               </a>
               {latestFilm.reviewSnippet ? (
                 <p className="text-sm leading-relaxed text-[#4f443b]">{latestFilm.reviewSnippet}</p>
@@ -155,6 +156,7 @@ export default async function Home() {
                   >
                     {film.title}
                     {film.year ? ` (${film.year})` : ""}
+                    {film.rating ? ` - ${film.rating}` : ""}
                   </a>
                   <p className="font-mono text-xs text-[#7f7468]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
                   {film.reviewSnippet ? <p className="mt-1 text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
