@@ -110,26 +110,36 @@ export default async function Home() {
         <article className="paper-card p-5">
           <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest films</h2>
           {recentTwoFilms.length > 0 ? (
-            <div className="mt-2 space-y-3">
-              {recentTwoFilms.map((film, index) => (
-                <div key={`${film.letterboxdUrl}-${index}`} className="flex items-center gap-3 border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
-                  <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+            <div className="mt-3 space-y-4">
+              <div className="flex gap-3">
+                {recentTwoFilms.map((film, index) => (
+                  <a
+                    key={`${film.letterboxdUrl}-${index}`}
+                    href={film.letterboxdUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex h-24 w-16 flex-none items-end overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    aria-label={`${film.title} poster`}
+                  >
                     {film.posterUrl ? (
                       <div
-                        className="h-full w-full bg-cover bg-center"
+                        className="h-full w-full bg-cover bg-center transition-transform duration-200 group-hover:scale-105"
                         style={{ backgroundImage: `url(${film.posterUrl})` }}
-                        aria-label={`${film.title} poster`}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
-                  </div>
-                  <div className="min-w-0 flex-1">
+                  </a>
+                ))}
+              </div>
+              <div className="space-y-2 border-t border-[#e2d7c2] pt-3">
+                {recentTwoFilms.map((film, index) => (
+                  <div key={`${film.letterboxdUrl}-review-${index}`}>
                     <a
                       href={film.letterboxdUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="truncate text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
+                      className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
                     >
                       {film.title}
                       {film.year ? ` (${film.year})` : ""}
@@ -138,9 +148,10 @@ export default async function Home() {
                     <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
                       {film.watchedAt ? formatDate(film.watchedAt) : "Recently logged"}
                     </p>
+                    {film.reviewSnippet ? <p className="text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">
