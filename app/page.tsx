@@ -50,7 +50,7 @@ export default async function Home() {
   ]);
   const latestPost = posts[0];
   const recentPosts = posts.slice(0, 3);
-  const recentTwoFilms = recentFilms.slice(0, 2);
+  const recentThreeFilms = recentFilms.slice(0, 3);
   const subjectLines = await Promise.all(
     recentPosts.map(async (post) => ({
       id: post.id,
@@ -109,16 +109,16 @@ export default async function Home() {
 
         <article className="paper-card p-5">
           <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest films</h2>
-          {recentTwoFilms.length > 0 ? (
-            <div className="mt-3 space-y-4">
-              <div className="flex gap-3">
-                {recentTwoFilms.map((film, index) => (
+          {recentThreeFilms.length > 0 ? (
+            <div className="mt-3">
+              <div className="grid grid-cols-3 gap-3">
+                {recentThreeFilms.map((film, index) => (
                   <a
                     key={`${film.letterboxdUrl}-${index}`}
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex h-24 w-16 flex-none items-end overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    className="group flex h-32 w-full flex-none items-end overflow-hidden rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -132,23 +132,12 @@ export default async function Home() {
                   </a>
                 ))}
               </div>
-              <div className="space-y-2 border-t border-[#e2d7c2] pt-3">
-                {recentTwoFilms.map((film, index) => (
-                  <div key={`${film.letterboxdUrl}-review-${index}`}>
-                    <a
-                      href={film.letterboxdUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
-                    >
-                      {film.title}
-                      {film.year ? ` (${film.year})` : ""}
-                      {film.rating ? ` - ${film.rating}` : ""}
-                    </a>
+              <div className="mt-3 grid grid-cols-3 gap-3 border-t border-[#e2d7c2] pt-3">
+                {recentThreeFilms.map((film, index) => (
+                  <div key={`${film.letterboxdUrl}-stars-${index}`} className="text-center">
                     <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
-                      {film.watchedAt ? formatDate(film.watchedAt) : "Recently logged"}
+                      {film.rating ?? "No rating"}
                     </p>
-                    {film.reviewSnippet ? <p className="text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
                   </div>
                 ))}
               </div>
