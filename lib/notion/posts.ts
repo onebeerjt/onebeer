@@ -364,6 +364,39 @@ function mapBlocksForDisplay(blocks: NotionBlock[]) {
     .filter((block) => (block.type === "image" ? (block.url ?? "").length > 0 : block.text.length > 0));
 }
 
+function findSubjectFromBlocks(blocks: NotionBlock[]) {
+  let firstParagraph = "";
+
+  for (const block of blocks) {
+    if (block.type === "heading_1") {
+      const text = richTextToPlainText(block.heading_1?.rich_text);
+      if (text) {
+        return text;
+      }
+    }
+
+    if (block.type === "heading_2") {
+      const text = richTextToPlainText(block.heading_2?.rich_text);
+      if (text) {
+        return text;
+      }
+    }
+
+    if (block.type === "heading_3") {
+      const text = richTextToPlainText(block.heading_3?.rich_text);
+      if (text) {
+        return text;
+      }
+    }
+
+    if (!firstParagraph && block.type === "paragraph") {
+      firstParagraph = richTextToPlainText(block.paragraph?.rich_text);
+    }
+  }
+
+  return firstParagraph;
+}
+
 async function getPageBlocks(pageId: string): Promise<NotionBlock[]> {
   const env = getNotionEnv();
   if (!env) {
@@ -402,6 +435,11 @@ async function getPageBlocks(pageId: string): Promise<NotionBlock[]> {
 export async function getPublishedPosts(): Promise<BlogPostSummary[]> {
   const posts = await queryDatabase();
   return posts;
+}
+
+export async function getPostSubject(postId: string): Promise<string> {
+  const blocks = await getPageBlocks(postId);
+  return findSubjectFromBlocks(blocks);
 }
 
 export async function getPublishedPostSlugs(): Promise<string[]> {

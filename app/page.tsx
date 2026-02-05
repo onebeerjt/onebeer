@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
-import { getPublishedPosts } from "@/lib/notion/posts";
+import { getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
 
 export const revalidate = 120;
 
@@ -51,6 +51,13 @@ export default async function Home() {
   const latestPost = posts[0];
   const recentPosts = posts.slice(0, 3);
   const recentTwoFilms = recentFilms.slice(0, 2);
+  const subjectLines = await Promise.all(
+    recentPosts.map(async (post) => ({
+      id: post.id,
+      subject: await getPostSubject(post.id)
+    }))
+  );
+  const subjectMap = new Map(subjectLines.map((entry) => [entry.id, entry.subject]));
 
   return (
     <div className="space-y-10">
@@ -85,7 +92,9 @@ export default async function Home() {
                   <Link href={`/blog/${post.slug}`} className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline">
                     {post.title}
                   </Link>
-                  {post.excerpt ? (
+                  {subjectMap.get(post.id) ? (
+                    <p className="text-sm italic leading-relaxed text-[#4f443b]">{subjectMap.get(post.id)}</p>
+                  ) : post.excerpt ? (
                     <p className="text-sm leading-relaxed text-[#4f443b]">{post.excerpt}</p>
                   ) : null}
                 </div>
