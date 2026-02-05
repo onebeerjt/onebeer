@@ -27,30 +27,32 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans">
         <NowPlayingBar />
-        <div className="mx-auto flex min-h-screen w-full max-w-4xl flex-col px-4 pb-8 pt-6 sm:px-6">
-          <header className="mb-10 border-b border-zinc-200 pb-6">
+        <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-8 pt-6 sm:px-6">
+          <header className="mb-8 border-b-2 border-[#cdbfa6] pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <Link
                   href="/"
-                  className="font-serif text-3xl font-semibold tracking-tight text-zinc-900"
+                  className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]"
                 >
                   onebeer
                 </Link>
-                <p className="mt-1 text-sm text-zinc-600">JT (@onebeerjt)</p>
+                <p className="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
+                  JT (@onebeerjt) / personal wire
+                </p>
               </div>
-              <nav className="flex items-center gap-5 text-sm font-medium text-zinc-700">
-                <Link href="/" className="transition-colors hover:text-zinc-900">
+              <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55]">
+                <Link href="/" className="transition-colors hover:text-[#8f1f1f]">
                   Home
                 </Link>
-                <Link href="/blog" className="transition-colors hover:text-zinc-900">
+                <Link href="/blog" className="transition-colors hover:text-[#8f1f1f]">
                   Blog
                 </Link>
               </nav>
             </div>
           </header>
           <main className="flex-1">{children}</main>
-          <footer className="mt-16 border-t border-zinc-200 pt-6 text-sm text-zinc-600">
+          <footer className="mt-16 border-t-2 border-[#cdbfa6] pt-6 text-sm text-[#6a5f55]">
             <p>Built with Next.js + Notion-first publishing workflow.</p>
           </footer>
         </div>

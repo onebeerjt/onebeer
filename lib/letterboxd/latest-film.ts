@@ -7,11 +7,27 @@ function decodeHtml(input: string) {
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/&#(\d+);/g, (_, code: string) => {
+      const parsed = Number(code);
+      return Number.isNaN(parsed) ? "" : String.fromCharCode(parsed);
+    })
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex: string) => {
+      const parsed = Number.parseInt(hex, 16);
+      return Number.isNaN(parsed) ? "" : String.fromCharCode(parsed);
+    })
     .trim();
 }
 
 function stripTags(input: string) {
   return input.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function cleanupText(input: string) {
+  return decodeHtml(stripTags(input))
+    .replace(/\]\]>/g, "")
+    .replace(/<!\[CDATA\[/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function extractTag(source: string, tag: string) {
@@ -20,10 +36,11 @@ function extractTag(source: string, tag: string) {
 }
 
 function parseTitle(rawTitle: string) {
-  const cleaned = decodeHtml(stripTags(rawTitle));
+  const cleaned = cleanupText(rawTitle);
   const withoutPrefix = cleaned
     .replace(/^.+\s(rewatched|reviewed|watched)\s/i, "")
     .replace(/^.+\slogged\s/i, "")
+    .replace(/\s*-\s*[★\u2605\u00bd]+$/u, "")
     .trim();
 
   const yearMatch = withoutPrefix.match(/\((\d{4})\)\s*$/);
@@ -52,7 +69,7 @@ function extractReviewSnippet(item: string) {
     return undefined;
   }
 
-  const clean = decodeHtml(stripTags(description));
+  const clean = cleanupText(description);
   if (!clean) {
     return undefined;
   }

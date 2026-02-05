@@ -4,6 +4,11 @@
 
 :root {
   color-scheme: light;
+  --paper: #f7f1e3;
+  --ink: #1f1a16;
+  --muted: #6a5f55;
+  --accent: #8f1f1f;
+  --line: #cdbfa6;
 }
 
 html,
@@ -12,15 +17,32 @@ body {
 }
 
 body {
-  @apply bg-zinc-50 text-zinc-900 antialiased;
+  @apply text-zinc-900 antialiased;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.55) 0%, transparent 40%),
+    linear-gradient(180deg, #f9f3e6 0%, #efe6d4 100%);
+  color: var(--ink);
 }
 
 @layer base {
   .font-sans {
-    font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+    font-family: "Trebuchet MS", "Verdana", "Segoe UI", sans-serif;
   }
 
   .font-serif {
-    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    font-family: "Book Antiqua", "Palatino Linotype", Palatino, serif;
+  }
+
+  .font-mono {
+    font-family: "Courier New", Courier, monospace;
+  }
+}
+
+@layer components {
+  .paper-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.9);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 10px 24px rgba(60, 40, 20, 0.05);
   }
 }
