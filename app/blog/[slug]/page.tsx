@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPostBySlug, getPublishedPostSlugs } from "@/lib/notion/posts";
 
@@ -10,6 +11,7 @@ type ContentBlock = {
   id: string;
   type: string;
   text: string;
+  url?: string;
 };
 
 export const revalidate = 300;
@@ -86,6 +88,22 @@ function renderBlock(block: ContentBlock) {
 
   if (block.type === "code") {
     return <pre className="overflow-x-auto rounded-md bg-zinc-900 p-4 text-sm text-zinc-100">{block.text}</pre>;
+  }
+
+  if (block.type === "image" && block.url) {
+    return (
+      <figure className="space-y-2">
+        <Image
+          src={block.url}
+          alt={block.text || "Notion image"}
+          width={1200}
+          height={675}
+          unoptimized
+          className="w-full rounded-md border border-[#cdbfa6]"
+        />
+        {block.text ? <figcaption className="text-xs text-[#7f7468]">{block.text}</figcaption> : null}
+      </figure>
+    );
   }
 
   return <p className="text-base leading-relaxed text-zinc-800">{block.text}</p>;

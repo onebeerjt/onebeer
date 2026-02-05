@@ -50,6 +50,7 @@ export default async function Home() {
     getRecentFilms(24)
   ]);
   const latestPost = posts[0];
+  const recentPosts = posts.slice(0, 3);
 
   return (
     <div className="space-y-10">
@@ -68,18 +69,27 @@ export default async function Home() {
 
       <section className="grid gap-4 sm:grid-cols-2">
         <article className="paper-card p-5">
-          <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest writing</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest writing</h2>
+            <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
+              View all
+            </Link>
+          </div>
           {latestPost ? (
-            <div className="mt-2 space-y-2">
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
-                {formatDate(latestPost.publishedAt)}
-              </p>
-              <Link href={`/blog/${latestPost.slug}`} className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline">
-                {latestPost.title}
-              </Link>
-              {latestPost.excerpt ? (
-                <p className="text-sm leading-relaxed text-[#4f443b]">{latestPost.excerpt}</p>
-              ) : null}
+            <div className="mt-2 space-y-3">
+              {recentPosts.map((post) => (
+                <div key={post.id} className="border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
+                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                    {formatDate(post.publishedAt)}
+                  </p>
+                  <Link href={`/blog/${post.slug}`} className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline">
+                    {post.title}
+                  </Link>
+                  {post.excerpt ? (
+                    <p className="text-sm leading-relaxed text-[#4f443b]">{post.excerpt}</p>
+                  ) : null}
+                </div>
+              ))}
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">

@@ -33,6 +33,12 @@ type NotionBlock = {
   bulleted_list_item?: { rich_text?: NotionRichText[] };
   numbered_list_item?: { rich_text?: NotionRichText[] };
   code?: { rich_text?: NotionRichText[] };
+  image?: {
+    type?: "external" | "file";
+    external?: { url?: string };
+    file?: { url?: string };
+    caption?: NotionRichText[];
+  };
 };
 
 type NotionBlockResponse = {
@@ -333,12 +339,29 @@ function extractBlockText(block: NotionBlock) {
 
 function mapBlocksForDisplay(blocks: NotionBlock[]) {
   return blocks
-    .map((block) => ({
-      id: block.id,
-      type: block.type,
-      text: extractBlockText(block)
-    }))
-    .filter((block) => block.text.length > 0);
+    .map((block) => {
+      if (block.type === "image") {
+        const url =
+          block.image?.type === "external"
+            ? block.image?.external?.url
+            : block.image?.file?.url;
+        const caption = richTextToPlainText(block.image?.caption);
+
+        return {
+          id: block.id,
+          type: block.type,
+          text: caption,
+          url: (url ?? "").trim()
+        };
+      }
+
+      return {
+        id: block.id,
+        type: block.type,
+        text: extractBlockText(block)
+      };
+    })
+    .filter((block) => (block.type === "image" ? (block.url ?? "").length > 0 : block.text.length > 0));
 }
 
 async function getPageBlocks(pageId: string): Promise<NotionBlock[]> {
