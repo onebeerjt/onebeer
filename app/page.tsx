@@ -118,7 +118,7 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md hover:opacity-0 hover:z-0"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -129,7 +129,7 @@ export default async function Home() {
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
-                    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#cdbfa6] bg-[#fff9ef] p-3 shadow-2xl md:flex md:items-center md:justify-center md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100">
+                    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#cdbfa6] bg-[#fff9ef] p-3 shadow-2xl md:flex md:items-center md:justify-center md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100 md:group-hover:z-40">
                       {film.posterUrl ? (
                         <div className="flex flex-col items-center gap-3">
                           <div
