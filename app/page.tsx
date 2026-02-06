@@ -118,12 +118,12 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex h-32 w-full flex-none items-end overflow-hidden rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    className="group flex h-40 w-full flex-none items-end overflow-hidden rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
                       <div
-                        className="h-full w-full bg-cover bg-center transition-transform duration-200 group-hover:scale-105"
+                        className="h-full w-full bg-contain bg-center bg-no-repeat transition-transform duration-200 group-hover:scale-[1.02]"
                         style={{ backgroundImage: `url(${film.posterUrl})` }}
                       />
                     ) : (
