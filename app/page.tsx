@@ -131,13 +131,18 @@ export default async function Home() {
                     )}
                     <div className="pointer-events-none absolute inset-0 z-10 hidden rounded-xl border border-[#cdbfa6] bg-[#fff9ef] shadow-2xl md:flex md:items-center md:justify-center md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100">
                       {film.posterUrl ? (
-                        <div
-                          className="h-[320px] w-[215px] bg-contain bg-center bg-no-repeat"
-                          style={{ backgroundImage: `url(${film.posterUrl})` }}
-                          aria-label={`${film.title} large poster`}
-                        />
+                        <div className="flex flex-col items-center gap-3">
+                          <div
+                            className="h-[420px] w-[280px] bg-contain bg-center bg-no-repeat"
+                            style={{ backgroundImage: `url(${film.posterUrl})` }}
+                            aria-label={`${film.title} large poster`}
+                          />
+                          <div className="rounded-full border border-[#cdbfa6] bg-[#fff4e3] px-3 py-1 text-sm font-semibold text-[#1f1a16]">
+                            {film.rating ?? "No rating"}
+                          </div>
+                        </div>
                       ) : (
-                        <div className="flex h-[320px] w-[215px] items-center justify-center text-sm text-zinc-500">No Art</div>
+                        <div className="flex h-[420px] w-[280px] items-center justify-center text-sm text-zinc-500">No Art</div>
                       )}
                     </div>
                   </a>
