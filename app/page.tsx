@@ -118,7 +118,7 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group flex h-40 w-full flex-none items-end overflow-hidden rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative flex h-44 w-full flex-none items-end overflow-hidden rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -129,6 +129,17 @@ export default async function Home() {
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
+                    <div className="pointer-events-none absolute inset-0 z-10 hidden rounded-xl border border-[#cdbfa6] bg-[#fff9ef] shadow-2xl md:flex md:items-center md:justify-center md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100">
+                      {film.posterUrl ? (
+                        <div
+                          className="h-[320px] w-[215px] bg-contain bg-center bg-no-repeat"
+                          style={{ backgroundImage: `url(${film.posterUrl})` }}
+                          aria-label={`${film.title} large poster`}
+                        />
+                      ) : (
+                        <div className="flex h-[320px] w-[215px] items-center justify-center text-sm text-zinc-500">No Art</div>
+                      )}
+                    </div>
                   </a>
                 ))}
               </div>
