@@ -118,7 +118,7 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm hover:shadow-md"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -129,7 +129,7 @@ export default async function Home() {
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
-                    <div className="pointer-events-none fixed inset-0 z-[70] hidden items-center justify-center md:group-hover:flex">
+                    <div className="pointer-events-none fixed inset-0 z-[9999] hidden items-center justify-center md:group-hover:flex">
                       <div className="absolute inset-0 bg-[#f7f0e3]" />
                       <div className="relative z-10 rounded-3xl border border-[#cdbfa6] bg-[#fff9ef] p-4 shadow-2xl">
                         {film.posterUrl ? (
