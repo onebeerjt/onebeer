@@ -66,7 +66,7 @@ export default async function Home() {
           What&apos;s up lately
         </p>
         <h1 className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16] sm:text-6xl">
-          Writing first. Watching and listening alongside it.
+          one beer blog
         </h1>
         <p className="max-w-2xl text-base leading-relaxed text-[#4f443b]">
           onebeer is JT&apos;s personal hub at <span className="font-medium">onebeer.io</span>.
@@ -118,7 +118,7 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md hover:opacity-0 hover:z-0"
+                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -129,21 +129,24 @@ export default async function Home() {
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
-                    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 hidden -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#cdbfa6] bg-[#fff9ef] p-3 shadow-2xl md:flex md:items-center md:justify-center md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100 md:group-hover:z-40">
-                      {film.posterUrl ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <div
-                            className="h-[420px] w-[280px] bg-contain bg-center bg-no-repeat"
-                            style={{ backgroundImage: `url(${film.posterUrl})` }}
-                            aria-label={`${film.title} large poster`}
-                          />
-                          <div className="rounded-full border border-[#cdbfa6] bg-[#fff4e3] px-3 py-1 text-sm font-semibold text-[#1f1a16]">
-                            {film.rating ?? "No rating"}
+                    <div className="pointer-events-none fixed inset-0 z-[70] hidden items-center justify-center md:group-hover:flex">
+                      <div className="absolute inset-0 bg-[#1f1a16]/30 backdrop-blur-[1px]" />
+                      <div className="relative z-10 rounded-3xl border border-[#cdbfa6] bg-[#fff9ef] p-4 shadow-2xl">
+                        {film.posterUrl ? (
+                          <div className="flex flex-col items-center gap-3">
+                            <div
+                              className="h-[520px] w-[340px] bg-contain bg-center bg-no-repeat"
+                              style={{ backgroundImage: `url(${film.posterUrl})` }}
+                              aria-label={`${film.title} large poster`}
+                            />
+                            <div className="rounded-full border border-[#cdbfa6] bg-[#fff4e3] px-4 py-1 text-base font-semibold text-[#1f1a16]">
+                              {film.rating ?? "No rating"}
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex h-[420px] w-[280px] items-center justify-center text-sm text-zinc-500">No Art</div>
-                      )}
+                        ) : (
+                          <div className="flex h-[520px] w-[340px] items-center justify-center text-sm text-zinc-500">No Art</div>
+                        )}
+                      </div>
                     </div>
                   </a>
                 ))}
