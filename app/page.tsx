@@ -61,13 +61,13 @@ export default async function Home() {
 
   return (
     <div className="space-y-10">
-      <section className="space-y-4">
-        <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#8f1f1f]">
-          What&apos;s up lately
-        </p>
+      <section className="space-y-3">
         <h1 className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16] sm:text-6xl">
-          one beer blog
+          one beer
         </h1>
+        <p className="font-serif text-2xl text-[#4f443b] sm:text-3xl">
+          thoughts &amp; streams on tap
+        </p>
         <p className="max-w-2xl text-base leading-relaxed text-[#4f443b]">
           onebeer is JT&apos;s personal hub at <span className="font-medium">onebeer.io</span>.
           Posts are published from Notion, and activity indicators keep the site feeling current.
