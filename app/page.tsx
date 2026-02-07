@@ -68,10 +68,7 @@ export default async function Home() {
         <p className="font-serif text-2xl text-[#4f443b] sm:text-3xl">
           thoughts &amp; streams on tap
         </p>
-        <p className="max-w-2xl text-base leading-relaxed text-[#4f443b]">
-          onebeer is JT&apos;s personal hub at <span className="font-medium">onebeer.io</span>.
-          Posts are published from Notion, and activity indicators keep the site feeling current.
-        </p>
+        <div className="h-1 w-24 rounded-full bg-[#cdbfa6]" />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
@@ -153,7 +150,7 @@ export default async function Home() {
               <div className="mt-3 grid grid-cols-3 gap-3 border-t border-[#e2d7c2] pt-3">
                 {recentThreeFilms.map((film, index) => (
                   <div key={`${film.letterboxdUrl}-stars-${index}`} className="text-center">
-                    <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                    <p className="font-mono text-base uppercase tracking-[0.2em] text-[#6a5f55]">
                       {film.rating ?? "No rating"}
                     </p>
                   </div>
