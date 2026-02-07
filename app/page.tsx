@@ -111,14 +111,14 @@ export default async function Home() {
           <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest films</h2>
           {recentThreeFilms.length > 0 ? (
             <div className="mt-3">
-              <div className="latest-films-grid grid grid-cols-3 gap-3 overflow-visible">
+              <div className="grid grid-cols-3 gap-3 overflow-visible">
                 {recentThreeFilms.map((film, index) => (
                   <a
                     key={`${film.letterboxdUrl}-${index}`}
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="latest-film group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm hover:shadow-md"
+                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm hover:shadow-md md:hover:z-50"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
@@ -129,7 +129,7 @@ export default async function Home() {
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
-                    <div className="pointer-events-none fixed inset-0 z-[9999] hidden items-center justify-center md:group-hover:flex">
+                    <div className="pointer-events-none fixed inset-0 z-[70] hidden items-center justify-center md:group-hover:flex">
                       <div className="relative z-10 rounded-3xl border border-[#cdbfa6] bg-[#fff9ef] p-4 shadow-2xl">
                         {film.posterUrl ? (
                           <div className="flex flex-col items-center gap-3">

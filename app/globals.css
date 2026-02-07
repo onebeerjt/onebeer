@@ -24,12 +24,6 @@ body {
   color: var(--ink);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .latest-films-grid:has(.latest-film:hover) .latest-film:not(:hover) {
-    opacity: 0;
-    pointer-events: none;
-  }
-}
 
 @layer base {
   .font-sans {
