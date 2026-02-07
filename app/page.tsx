@@ -130,7 +130,7 @@ export default async function Home() {
                       <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
                     )}
                     <div className="pointer-events-none fixed inset-0 z-[70] hidden items-center justify-center md:group-hover:flex">
-                      <div className="absolute inset-0 bg-[#1f1a16]/30 backdrop-blur-[1px]" />
+                      <div className="absolute inset-0 bg-[#f7f0e3]" />
                       <div className="relative z-10 rounded-3xl border border-[#cdbfa6] bg-[#fff9ef] p-4 shadow-2xl">
                         {film.posterUrl ? (
                           <div className="flex flex-col items-center gap-3">
