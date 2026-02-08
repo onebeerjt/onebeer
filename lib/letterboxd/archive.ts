@@ -138,6 +138,36 @@ function readArchive(): LatestFilm[] {
     .filter((film): film is LatestFilm => film !== null);
 }
 
+async function fetchPosterFromLetterboxd(url: string): Promise<string | undefined> {
+  try {
+    const response = await fetch(url, { next: { revalidate: 86400 } });
+    if (!response.ok) {
+      return undefined;
+    }
+    const html = await response.text();
+    const ogImage = html.match(/property="og:image" content="([^"]+)"/i)?.[1];
+    if (ogImage) {
+      return ogImage;
+    }
+    const twitterImage = html.match(/name="twitter:image" content="([^"]+)"/i)?.[1];
+    return twitterImage || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function mergeFilms(base: LatestFilm, incoming: LatestFilm): LatestFilm {
+  return {
+    ...base,
+    ...incoming,
+    posterUrl: incoming.posterUrl || base.posterUrl,
+    reviewSnippet: incoming.reviewSnippet || base.reviewSnippet,
+    rating: incoming.rating || base.rating,
+    watchedAt: incoming.watchedAt || base.watchedAt,
+    year: incoming.year || base.year
+  };
+}
+
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
   const merged = new Map<string, LatestFilm>();
@@ -150,14 +180,31 @@ export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   }
 
   for (const film of recent) {
-    merged.set(film.letterboxdUrl, film);
+    const existing = merged.get(film.letterboxdUrl);
+    if (existing) {
+      merged.set(film.letterboxdUrl, mergeFilms(existing, film));
+    } else {
+      merged.set(film.letterboxdUrl, film);
+    }
   }
 
-  return Array.from(merged.values())
+  const items = Array.from(merged.values())
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
       return bTime - aTime;
     })
     .slice(0, limit);
+
+  const filled = await Promise.all(
+    items.map(async (film) => {
+      if (!film.posterUrl && film.letterboxdUrl) {
+        const posterUrl = await fetchPosterFromLetterboxd(film.letterboxdUrl);
+        return { ...film, posterUrl: posterUrl ?? film.posterUrl };
+      }
+      return film;
+    })
+  );
+
+  return filled;
 }
