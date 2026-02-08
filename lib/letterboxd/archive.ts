@@ -191,7 +191,7 @@ function normalizeLetterboxdKey(url?: string): string | null {
 function filmKeys(film: LatestFilm): string[] {
   const title = film.title.toLowerCase().trim();
   const year = (film.year ?? "").toLowerCase().trim();
-  const watched = film.watchedAt ? film.watchedAt.slice(0, 10) : "";
+  const watched = film.watchedAt ?? "";
   const base = `${title}|${year}`;
   const keys = new Set<string>();
   const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
@@ -202,12 +202,8 @@ function filmKeys(film: LatestFilm): string[] {
 
   if (watched) {
     keys.add(`${base}|${watched}`);
-    if (film.rating) {
-      keys.add(`${base}|${watched}|${film.rating}`);
-    }
+    keys.add(`watched:${watched}`);
   }
-
-  keys.add(base);
 
   return Array.from(keys);
 }
