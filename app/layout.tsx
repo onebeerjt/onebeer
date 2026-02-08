@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NowPlayingBar } from "@/components/now-playing-bar";
+import { getStatusNote } from "@/lib/notion/status";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,11 +22,12 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: {
   children: React.ReactNode;
 }) {
+  const statusNote = await getStatusNote();
   return (
     <html lang="en">
       <body className="font-sans">
@@ -45,7 +47,13 @@ export default function RootLayout({
                   JT (@onebeerjt) / personal wire
                 </p>
               </div>
-              <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55]">
+              <div className="flex flex-wrap items-center gap-4">
+                {statusNote ? (
+                  <div className="rounded-full border border-[#cdbfa6] bg-[#fff9ef] px-4 py-2 text-xs font-semibold text-[#1f1a16] shadow-sm">
+                    {statusNote}
+                  </div>
+                ) : null}
+                <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55]">
                 <Link href="/" className="transition-colors hover:text-[#8f1f1f]">
                   Home
                 </Link>
@@ -55,7 +63,8 @@ export default function RootLayout({
                 <Link href="/films" className="transition-colors hover:text-[#8f1f1f]">
                   Films
                 </Link>
-              </nav>
+                </nav>
+              </div>
             </div>
           </header>
           <main className="flex-1">{children}</main>

@@ -172,19 +172,27 @@ export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
   const merged = new Map<string, LatestFilm>();
 
+  const keyFor = (film: LatestFilm) => {
+    const title = film.title.toLowerCase().trim();
+    const year = film.year ?? "";
+    const watched = film.watchedAt ? film.watchedAt.slice(0, 10) : "";
+    return watched ? `${title}|${year}|${watched}` : film.letterboxdUrl;
+  };
+
   for (const film of archive) {
     if (!film.letterboxdUrl || film.letterboxdUrl === "#") {
       continue;
     }
-    merged.set(film.letterboxdUrl, film);
+    merged.set(keyFor(film), film);
   }
 
   for (const film of recent) {
-    const existing = merged.get(film.letterboxdUrl);
+    const key = keyFor(film);
+    const existing = merged.get(key);
     if (existing) {
-      merged.set(film.letterboxdUrl, mergeFilms(existing, film));
+      merged.set(key, mergeFilms(existing, film));
     } else {
-      merged.set(film.letterboxdUrl, film);
+      merged.set(key, film);
     }
   }
 
