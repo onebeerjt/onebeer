@@ -168,35 +168,65 @@ function mergeFilms(base: LatestFilm, incoming: LatestFilm): LatestFilm {
   };
 }
 
+function filmKeys(film: LatestFilm): string[] {
+  const title = film.title.toLowerCase().trim();
+  const year = (film.year ?? "").toLowerCase().trim();
+  const watched = film.watchedAt ? film.watchedAt.slice(0, 10) : "";
+  const base = `${title}|${year}`;
+  const keys = new Set<string>();
+
+  if (film.letterboxdUrl && film.letterboxdUrl !== "#") {
+    keys.add(film.letterboxdUrl);
+  }
+
+  if (watched) {
+    keys.add(`${base}|${watched}`);
+    if (film.rating) {
+      keys.add(`${base}|${watched}|${film.rating}`);
+    }
+  }
+
+  keys.add(base);
+
+  return Array.from(keys);
+}
+
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
-  const merged = new Map<string, LatestFilm>();
+  const items: LatestFilm[] = [];
+  const keyIndex = new Map<string, number>();
 
-  const keyFor = (film: LatestFilm) => {
-    const title = film.title.toLowerCase().trim();
-    const year = film.year ?? "";
-    const watched = film.watchedAt ? film.watchedAt.slice(0, 10) : "";
-    return watched ? `${title}|${year}|${watched}` : film.letterboxdUrl;
+  const upsert = (film: LatestFilm) => {
+    const keys = filmKeys(film);
+    const existingIndex = keys.map((key) => keyIndex.get(key)).find((value) => value !== undefined);
+
+    if (existingIndex !== undefined) {
+      const merged = mergeFilms(items[existingIndex], film);
+      items[existingIndex] = merged;
+      for (const key of filmKeys(merged)) {
+        keyIndex.set(key, existingIndex);
+      }
+      return;
+    }
+
+    const nextIndex = items.push(film) - 1;
+    for (const key of keys) {
+      keyIndex.set(key, nextIndex);
+    }
   };
 
   for (const film of archive) {
     if (!film.letterboxdUrl || film.letterboxdUrl === "#") {
       continue;
     }
-    merged.set(keyFor(film), film);
+    upsert(film);
   }
 
   for (const film of recent) {
-    const key = keyFor(film);
-    const existing = merged.get(key);
-    if (existing) {
-      merged.set(key, mergeFilms(existing, film));
-    } else {
-      merged.set(key, film);
-    }
+    upsert(film);
   }
 
-  const items = Array.from(merged.values())
+  const sorted = items
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
@@ -205,7 +235,7 @@ export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
     .slice(0, limit);
 
   const filled = await Promise.all(
-    items.map(async (film) => {
+    sorted.map(async (film) => {
       if (!film.posterUrl && film.letterboxdUrl) {
         const posterUrl = await fetchPosterFromLetterboxd(film.letterboxdUrl);
         return { ...film, posterUrl: posterUrl ?? film.posterUrl };
