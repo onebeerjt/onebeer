@@ -168,15 +168,36 @@ function mergeFilms(base: LatestFilm, incoming: LatestFilm): LatestFilm {
   };
 }
 
+function normalizeLetterboxdKey(url?: string): string | null {
+  if (!url || url === "#") {
+    return null;
+  }
+
+  try {
+    const parsed = new URL(url);
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    const filmIndex = segments.indexOf("film");
+    if (filmIndex >= 0 && segments[filmIndex + 1]) {
+      const user = segments[0] ?? "user";
+      const slug = segments[filmIndex + 1];
+      return `${parsed.hostname}/${user}/film/${slug}`.toLowerCase();
+    }
+    return `${parsed.hostname}${parsed.pathname}`.toLowerCase();
+  } catch {
+    return url.toLowerCase();
+  }
+}
+
 function filmKeys(film: LatestFilm): string[] {
   const title = film.title.toLowerCase().trim();
   const year = (film.year ?? "").toLowerCase().trim();
   const watched = film.watchedAt ? film.watchedAt.slice(0, 10) : "";
   const base = `${title}|${year}`;
   const keys = new Set<string>();
+  const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
 
-  if (film.letterboxdUrl && film.letterboxdUrl !== "#") {
-    keys.add(film.letterboxdUrl);
+  if (canonicalUrl) {
+    keys.add(canonicalUrl);
   }
 
   if (watched) {
