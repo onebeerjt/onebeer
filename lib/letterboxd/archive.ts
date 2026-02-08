@@ -243,23 +243,8 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
 
-  const mergedByUrl = new Map<string, LatestFilm>();
-  const upsertByUrl = (film: LatestFilm) => {
-    const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
-    if (!canonicalUrl) return;
-    const existing = mergedByUrl.get(canonicalUrl);
-    mergedByUrl.set(canonicalUrl, existing ? mergeFilms(existing, film) : film);
-  };
-
-  for (const film of archive) {
-    upsertByUrl(film);
-  }
-
-  for (const film of recent) {
-    upsertByUrl(film);
-  }
-
-  const sorted = dedupeByTitleDate(Array.from(mergedByUrl.values()))
+  const combined = [...recent, ...archive];
+  const sorted = dedupeByTitleDate(combined)
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
