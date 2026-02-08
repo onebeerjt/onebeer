@@ -31,16 +31,17 @@ export default function RootLayout({
       <body className="font-sans">
         <NowPlayingBar />
         <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-8 pt-6 sm:px-6">
-          <header className="mb-8 border-b-2 border-[#cdbfa6] pb-5">
+          <header className="mb-6 border-b-2 border-[#cdbfa6] pb-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <Link href="/" className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
-                  <span className="mr-2 align-middle text-3xl" aria-hidden>
+              <div className="space-y-2">
+                <Link href="/" className="inline-flex items-baseline gap-3 font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
+                  <span className="text-3xl" aria-hidden>
                     🍺
                   </span>
-                  onebeer
+                  <span>one beer</span>
+                  <span className="text-xl font-normal text-[#4f443b]">thoughts &amp; streams on tap</span>
                 </Link>
-                <p className="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
                   JT (@onebeerjt) / personal wire
                 </p>
               </div>

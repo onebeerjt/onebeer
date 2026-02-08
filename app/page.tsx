@@ -61,15 +61,6 @@ export default async function Home() {
 
   return (
     <div className="space-y-10">
-      <section className="space-y-3">
-        <h1 className="font-serif text-4xl font-semibold tracking-tight text-[#1f1a16] sm:text-6xl">
-          one beer
-        </h1>
-        <p className="font-serif text-2xl text-[#4f443b] sm:text-3xl">
-          thoughts &amp; streams on tap
-        </p>
-        <div className="h-1 w-24 rounded-full bg-[#cdbfa6]" />
-      </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
         <article className="paper-card p-5">
