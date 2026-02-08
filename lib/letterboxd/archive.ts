@@ -208,6 +208,36 @@ function filmKeys(film: LatestFilm): string[] {
   return Array.from(keys);
 }
 
+function bestFilmForGroup(films: LatestFilm[]): LatestFilm {
+  const scored = films.map((film) => {
+    let score = 0;
+    if (film.posterUrl) score += 3;
+    if (film.reviewSnippet) score += 2;
+    if (film.rating) score += 1;
+    if (film.letterboxdUrl && film.letterboxdUrl !== "#") score += 1;
+    return { film, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0]?.film ?? films[0];
+}
+
+function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
+  const groups = new Map<string, LatestFilm[]>();
+
+  for (const film of items) {
+    const title = film.title.toLowerCase().trim();
+    const year = (film.year ?? "").toLowerCase().trim();
+    const date = film.watchedAt ? film.watchedAt.slice(0, 10) : "unknown";
+    const key = `${title}|${year}|${date}`;
+    const list = groups.get(key) ?? [];
+    list.push(film);
+    groups.set(key, list);
+  }
+
+  return Array.from(groups.values()).map(bestFilmForGroup);
+}
+
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
   const items: LatestFilm[] = [];
@@ -243,7 +273,7 @@ export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
     upsert(film);
   }
 
-  const sorted = items
+  const sorted = dedupeByTitleDate(items)
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
