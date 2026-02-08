@@ -11,7 +11,7 @@ const HEADER_ALIASES: Record<string, string[]> = {
   watchedAt: ["watcheddate", "watched date", "date"],
   rating: ["rating", "rating10", "rating/5"],
   review: ["review", "reviewtext", "review text"],
-  url: ["letterboxduri", "letterboxd url", "url", "uri"]
+  url: ["letterboxduri", "letterboxd uri", "letterboxd url", "url", "uri"]
 };
 
 function parseCsvRow(row: string): string[] {
