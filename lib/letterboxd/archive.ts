@@ -269,40 +269,24 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
 
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
-  const items: LatestFilm[] = [];
-  const keyIndex = new Map<string, number>();
 
-  const upsert = (film: LatestFilm) => {
-    const keys = filmKeys(film);
-    const existingIndex = keys.map((key) => keyIndex.get(key)).find((value) => value !== undefined);
-
-    if (existingIndex !== undefined) {
-      const merged = mergeFilms(items[existingIndex], film);
-      items[existingIndex] = merged;
-      for (const key of filmKeys(merged)) {
-        keyIndex.set(key, existingIndex);
-      }
-      return;
-    }
-
-    const nextIndex = items.push(film) - 1;
-    for (const key of keys) {
-      keyIndex.set(key, nextIndex);
-    }
+  const mergedByUrl = new Map<string, LatestFilm>();
+  const upsertByUrl = (film: LatestFilm) => {
+    const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
+    if (!canonicalUrl) return;
+    const existing = mergedByUrl.get(canonicalUrl);
+    mergedByUrl.set(canonicalUrl, existing ? mergeFilms(existing, film) : film);
   };
 
   for (const film of archive) {
-    if (!film.letterboxdUrl || film.letterboxdUrl === "#") {
-      continue;
-    }
-    upsert(film);
+    upsertByUrl(film);
   }
 
   for (const film of recent) {
-    upsert(film);
+    upsertByUrl(film);
   }
 
-  const sorted = dedupeByTitleDate(items)
+  const sorted = dedupeByTitleDate(Array.from(mergedByUrl.values()))
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
