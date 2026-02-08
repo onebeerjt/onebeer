@@ -87,6 +87,15 @@ function ratingToStars(raw: string): string | undefined {
   return stars || undefined;
 }
 
+function dateKey(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York"
+  }).format(date);
+}
+
 function normalizeDate(raw: string): string | undefined {
   if (!raw) {
     return undefined;
@@ -193,7 +202,7 @@ function filmKeys(film: LatestFilm): string[] {
   const year = (film.year ?? "").toLowerCase().trim();
   const watched = film.watchedAt ?? "";
   const base = `${title}|${year}`;
-  const dateOnly = watched ? watched.slice(0, 10) : "";
+  const dateOnly = dateKey(watched);
   const keys = new Set<string>();
   const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
 
@@ -235,7 +244,7 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
   for (const film of items) {
     const title = film.title.toLowerCase().trim();
     const year = (film.year ?? "").toLowerCase().trim();
-    const date = film.watchedAt ? film.watchedAt.slice(0, 10) : "unknown";
+    const date = dateKey(film.watchedAt) || "unknown";
     const key = `${title}|${year}|${date}`;
     const list = groups.get(key) ?? [];
     list.push(film);
