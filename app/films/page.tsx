@@ -1,6 +1,6 @@
-import { getRecentFilms } from "@/lib/letterboxd/latest-film";
+import { getAllFilms } from "@/lib/letterboxd/archive";
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 function formatPlayedAt(value: string | undefined) {
   if (!value) {
@@ -21,7 +21,7 @@ function formatPlayedAt(value: string | undefined) {
 }
 
 export default async function FilmsPage() {
-  const films = await getRecentFilms(200);
+  const films = await getAllFilms(500);
 
   return (
     <div className="space-y-8">
