@@ -197,9 +197,22 @@ function normalizeLetterboxdKey(url?: string): string | null {
   }
 }
 
+function normalizeTitleForKey(title: string, year?: string) {
+  const base = title
+    .toLowerCase()
+    .replace(/\(\d{4}\)/g, "")
+    .replace(/,\s*\d{4}/g, "")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!year) return base;
+  return base.replace(new RegExp(`\\b${year}\\b`, "g"), "").trim();
+}
+
 function filmKeys(film: LatestFilm): string[] {
-  const title = film.title.toLowerCase().trim();
   const year = (film.year ?? "").toLowerCase().trim();
+  const title = normalizeTitleForKey(film.title, year);
   const watched = film.watchedAt ?? "";
   const base = `${title}|${year}`;
   const dateOnly = dateKey(watched);
@@ -242,8 +255,8 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
   const groups = new Map<string, LatestFilm[]>();
 
   for (const film of items) {
-    const title = film.title.toLowerCase().trim();
     const year = (film.year ?? "").toLowerCase().trim();
+    const title = normalizeTitleForKey(film.title, year);
     const date = dateKey(film.watchedAt) || "unknown";
     const key = `${title}|${year}|${date}`;
     const list = groups.get(key) ?? [];
