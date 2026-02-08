@@ -210,33 +210,6 @@ function normalizeTitleForKey(title: string, year?: string) {
   return base.replace(new RegExp(`\\b${year}\\b`, "g"), "").trim();
 }
 
-function filmKeys(film: LatestFilm): string[] {
-  const year = (film.year ?? "").toLowerCase().trim();
-  const title = normalizeTitleForKey(film.title, year);
-  const watched = film.watchedAt ?? "";
-  const base = `${title}|${year}`;
-  const dateOnly = dateKey(watched);
-  const keys = new Set<string>();
-  const canonicalUrl = normalizeLetterboxdKey(film.letterboxdUrl);
-
-  if (canonicalUrl) {
-    keys.add(canonicalUrl);
-  }
-
-  if (watched) {
-    keys.add(`${base}|${watched}`);
-    keys.add(`watched:${watched}`);
-  }
-
-  if (dateOnly) {
-    keys.add(`${base}|${dateOnly}`);
-  }
-
-  keys.add(base);
-
-  return Array.from(keys);
-}
-
 function bestFilmForGroup(films: LatestFilm[]): LatestFilm {
   const scored = films.map((film) => {
     let score = 0;
