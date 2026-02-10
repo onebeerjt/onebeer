@@ -45,12 +45,13 @@ export default async function RootLayout({
                   </Link>
                   <span className="text-xl font-normal text-[#4f443b]">thoughts &amp; streams on tap</span>
                   {statusNote ? (
-                    <div className="relative flex items-center">
-                      <div className="relative rounded-[22px] border border-[#cdbfa6] bg-[#fff9ef] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1f1a16] shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg" aria-hidden>
+                        💭
+                      </span>
+                      <div className="rounded-[999px] border border-[#cdbfa6] bg-[#fff9ef] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1f1a16] shadow-sm">
                         {statusNote}
                       </div>
-                      <span className="absolute -left-3 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
-                      <span className="absolute -left-7 top-[60%] h-2 w-2 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
                     </div>
                   ) : null}
                 </div>
