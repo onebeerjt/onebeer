@@ -36,30 +36,29 @@ export default async function RootLayout({
           <header className="mb-6 border-b-2 border-[#cdbfa6] pb-4">
             <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
               <div className="space-y-2">
-                <Link href="/" className="inline-flex items-baseline gap-3 font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
-                  <span className="text-3xl" aria-hidden>
-                    🍺
-                  </span>
-                  <span>one beer</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Link href="/" className="inline-flex items-baseline gap-3 font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
+                    <span className="text-3xl" aria-hidden>
+                      🍺
+                    </span>
+                    <span>one beer</span>
+                  </Link>
                   <span className="text-xl font-normal text-[#4f443b]">thoughts &amp; streams on tap</span>
-                </Link>
+                  {statusNote ? (
+                    <div className="relative flex items-center">
+                      <div className="relative rounded-[22px] border border-[#cdbfa6] bg-[#fff9ef] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1f1a16] shadow-sm">
+                        {statusNote}
+                      </div>
+                      <span className="absolute -left-3 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
+                      <span className="absolute -left-7 top-[60%] h-2 w-2 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
+                    </div>
+                  ) : null}
+                </div>
                 <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
                   JT (@onebeerjt) / personal wire
                 </p>
               </div>
-              {statusNote ? (
-                <div className="relative flex items-center justify-center sm:justify-start">
-                  <div className="relative">
-                    <div className="rounded-[22px] border border-[#cdbfa6] bg-[#fff9ef] px-5 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#1f1a16] shadow-sm">
-                      {statusNote}
-                    </div>
-                    <span className="absolute -left-3 top-1/2 h-3 w-3 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
-                    <span className="absolute -left-7 top-[60%] h-2 w-2 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
-                  </div>
-                </div>
-              ) : (
-                <span className="hidden sm:block" />
-              )}
+              <span className="hidden sm:block" />
               <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55] sm:justify-end">
                 <Link href="/" className="transition-colors hover:text-[#8f1f1f]">
                   Home
