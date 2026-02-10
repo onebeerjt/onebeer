@@ -49,8 +49,13 @@ export default async function RootLayout({
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 {statusNote ? (
-                  <div className="rounded-full border border-[#cdbfa6] bg-[#fff9ef] px-4 py-2 text-xs font-semibold text-[#1f1a16] shadow-sm">
-                    {statusNote}
+                  <div className="relative order-first flex items-center gap-2">
+                    <div className="relative rounded-full border border-[#cdbfa6] bg-[#fff9ef] px-4 py-2 text-xs font-semibold text-[#1f1a16] shadow-sm">
+                      {statusNote}
+                      <span className="absolute -left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
+                      <span className="absolute -left-6 top-[58%] h-1.5 w-1.5 -translate-y-1/2 rounded-full border border-[#cdbfa6] bg-[#fff9ef]" />
+                    </div>
+                    <span className="text-xs">💭</span>
                   </div>
                 ) : null}
                 <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55]">
