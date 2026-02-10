@@ -165,38 +165,6 @@ async function fetchPosterFromLetterboxd(url: string): Promise<string | undefine
   }
 }
 
-function mergeFilms(base: LatestFilm, incoming: LatestFilm): LatestFilm {
-  return {
-    ...base,
-    ...incoming,
-    posterUrl: incoming.posterUrl || base.posterUrl,
-    reviewSnippet: incoming.reviewSnippet || base.reviewSnippet,
-    rating: incoming.rating || base.rating,
-    watchedAt: incoming.watchedAt || base.watchedAt,
-    year: incoming.year || base.year
-  };
-}
-
-function normalizeLetterboxdKey(url?: string): string | null {
-  if (!url || url === "#") {
-    return null;
-  }
-
-  try {
-    const parsed = new URL(url);
-    const segments = parsed.pathname.split("/").filter(Boolean);
-    const filmIndex = segments.indexOf("film");
-    if (filmIndex >= 0 && segments[filmIndex + 1]) {
-      const user = segments[0] ?? "user";
-      const slug = segments[filmIndex + 1];
-      return `${parsed.hostname}/${user}/film/${slug}`.toLowerCase();
-    }
-    return `${parsed.hostname}${parsed.pathname}`.toLowerCase();
-  } catch {
-    return url.toLowerCase();
-  }
-}
-
 function normalizeTitleForKey(title: string, year?: string) {
   const base = title
     .toLowerCase()
