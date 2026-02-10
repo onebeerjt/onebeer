@@ -243,7 +243,24 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
 
-  const combined = [...recent, ...archive];
+  const recentDates = recent
+    .map((film) => (film.watchedAt ? new Date(film.watchedAt) : null))
+    .filter((date): date is Date => Boolean(date) && !Number.isNaN(date!.getTime()));
+
+  const oldestRecent = recentDates.length
+    ? new Date(Math.min(...recentDates.map((date) => date.getTime())))
+    : null;
+
+  const archiveOnly = oldestRecent
+    ? archive.filter((film) => {
+        if (!film.watchedAt) return true;
+        const filmDate = new Date(film.watchedAt);
+        if (Number.isNaN(filmDate.getTime())) return true;
+        return filmDate.getTime() < oldestRecent.getTime();
+      })
+    : archive;
+
+  const combined = [...recent, ...archiveOnly];
   const sorted = dedupeByTitleDate(combined)
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
