@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
-import { getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
+import { getPostBySlug, getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
 
 export const revalidate = 120;
 
@@ -42,6 +42,23 @@ function formatPlayedAt(value: string | undefined) {
   }).format(date);
 }
 
+function getPostPreview(content: unknown) {
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  for (const block of content) {
+    if (!block || typeof block !== "object") continue;
+    const type = (block as { type?: string }).type ?? "";
+    const text = (block as { text?: string }).text ?? "";
+    if (!text) continue;
+    if (type.startsWith("heading")) continue;
+    return text.length > 220 ? `${text.slice(0, 220).trim()}...` : text;
+  }
+
+  return "";
+}
+
 export default async function Home() {
   const [posts, recentTracks, recentFilms] = await Promise.all([
     getPublishedPosts(),
@@ -49,6 +66,8 @@ export default async function Home() {
     getRecentFilms(24)
   ]);
   const latestPost = posts[0];
+  const latestPostDetail = latestPost ? await getPostBySlug(latestPost.slug) : null;
+  const latestPreview = latestPostDetail ? getPostPreview(latestPostDetail.content) : "";
   const recentPosts = posts.slice(0, 3);
   const recentThreeFilms = recentFilms.slice(0, 3);
   const subjectLines = await Promise.all(
@@ -66,9 +85,6 @@ export default async function Home() {
         <article className="paper-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest writing</h2>
-            <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
-              View all
-            </Link>
           </div>
           {latestPost ? (
             <div className="mt-2 space-y-3">
@@ -85,8 +101,16 @@ export default async function Home() {
                   ) : post.excerpt ? (
                     <p className="text-sm leading-relaxed text-[#4f443b]">{post.excerpt}</p>
                   ) : null}
+                  {post.id === latestPost?.id && latestPreview ? (
+                    <p className="text-sm leading-relaxed text-[#4f443b]">{latestPreview}</p>
+                  ) : null}
                 </div>
               ))}
+              <div className="flex justify-end">
+                <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
+                  View all
+                </Link>
+              </div>
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">
@@ -106,7 +130,7 @@ export default async function Home() {
                     href={film.letterboxdUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg border border-[#cdbfa6] bg-[#ede3cf] shadow-sm hover:shadow-md md:hover:z-50"
+                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg bg-[#ede3cf] shadow-sm hover:shadow-md md:hover:z-50"
                     aria-label={`${film.title} poster`}
                   >
                     {film.posterUrl ? (
