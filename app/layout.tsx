@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NowPlayingBar } from "@/components/now-playing-bar";
-import { getStatusNote } from "@/lib/notion/status";
+import { getStatusInfo } from "@/lib/notion/status";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,12 +22,58 @@ export const metadata: Metadata = {
   }
 };
 
+function formatRelativeTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  const diffMs = Date.now() - date.getTime();
+  const diffSeconds = Math.round(diffMs / 1000);
+  if (diffSeconds < 45) {
+    return "just now";
+  }
+
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+  const diffMinutes = Math.round(diffSeconds / 60);
+  if (diffMinutes < 60) {
+    return rtf.format(-diffMinutes, "minute");
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) {
+    return rtf.format(-diffHours, "hour");
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  if (diffDays < 7) {
+    return rtf.format(-diffDays, "day");
+  }
+
+  const diffWeeks = Math.round(diffDays / 7);
+  if (diffWeeks < 5) {
+    return rtf.format(-diffWeeks, "week");
+  }
+
+  const diffMonths = Math.round(diffDays / 30);
+  if (diffMonths < 12) {
+    return rtf.format(-diffMonths, "month");
+  }
+
+  const diffYears = Math.round(diffDays / 365);
+  return rtf.format(-diffYears, "year");
+}
+
 export default async function RootLayout({
   children
 }: {
   children: React.ReactNode;
 }) {
-  const statusNote = await getStatusNote();
+  const status = await getStatusInfo();
+  const statusNote = status.note;
+  const statusUpdatedAt = status.updatedAt;
+
+  const relativeStatusTime = statusUpdatedAt ? formatRelativeTime(statusUpdatedAt) : null;
   return (
     <html lang="en">
       <body className="font-sans">
@@ -45,13 +91,14 @@ export default async function RootLayout({
                   </Link>
                   <span className="text-xl font-normal text-[#4f443b]">thoughts &amp; streams on tap</span>
                   {statusNote ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg" aria-hidden>
-                        💭
-                      </span>
-                      <div className="rounded-[999px] border border-[#cdbfa6] bg-[#fff9ef] px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#1f1a16] shadow-sm">
-                        {statusNote}
-                      </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#1f1a16]">
+                      <span className="text-sm">💬</span>
+                      <span>{statusNote}</span>
+                      {relativeStatusTime ? (
+                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#6a5f55]">
+                          {relativeStatusTime}
+                        </span>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
