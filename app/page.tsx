@@ -98,6 +98,8 @@ export default async function Home() {
   const previewMap = new Map(postPreviewData.map((entry) => [entry.id, entry.preview]));
   const previewImageMap = new Map(postPreviewData.map((entry) => [entry.id, entry.imageUrl]));
   const recentThreeFilms = recentFilms.slice(0, 3);
+  const featuredPost = recentPosts[0];
+  const secondaryPosts = recentPosts.slice(1, 3);
   const subjectLines = await Promise.all(
     recentPosts.map(async (post) => ({
       id: post.id,
@@ -116,37 +118,58 @@ export default async function Home() {
           </div>
           {latestPost ? (
             <div className="mt-2 flex flex-1 flex-col">
-              <div className="space-y-3">
-              {recentPosts.map((post) => (
-                <div key={post.id} className="border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
-                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
-                    {formatDate(post.publishedAt)}
-                  </p>
-                  <Link href={`/blog/${post.slug}`} className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline">
-                    {post.title}
-                  </Link>
-                  {subjectMap.get(post.id) ? (
-                    <p className="text-sm italic leading-relaxed text-[#4f443b]">{subjectMap.get(post.id)}</p>
-                  ) : post.excerpt ? (
-                    <p className="text-sm leading-relaxed text-[#4f443b]">{post.excerpt}</p>
-                  ) : null}
-                  {!subjectMap.get(post.id) && !post.excerpt && previewMap.get(post.id) ? (
-                    <p className="text-sm leading-relaxed text-[#4f443b]">{previewMap.get(post.id)}</p>
-                  ) : null}
-                  {post.id === latestPost.id && previewImageMap.get(post.id) ? (
-                    <div className="mt-2 overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
-                      <Image
-                        src={previewImageMap.get(post.id) ?? ""}
-                        alt={`${post.title} preview`}
-                        width={1000}
-                        height={560}
-                        unoptimized
-                        className="h-auto w-full object-cover"
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              ))}
+              <div className="space-y-4">
+                {featuredPost ? (
+                  <div className="border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
+                    <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                      {formatDate(featuredPost.publishedAt)}
+                    </p>
+                    <Link
+                      href={`/blog/${featuredPost.slug}`}
+                      className="text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
+                    >
+                      {featuredPost.title}
+                    </Link>
+                    {subjectMap.get(featuredPost.id) ? (
+                      <p className="text-sm italic leading-relaxed text-[#4f443b]">{subjectMap.get(featuredPost.id)}</p>
+                    ) : featuredPost.excerpt ? (
+                      <p className="text-sm leading-relaxed text-[#4f443b]">{featuredPost.excerpt}</p>
+                    ) : null}
+                    {!subjectMap.get(featuredPost.id) && !featuredPost.excerpt && previewMap.get(featuredPost.id) ? (
+                      <p className="text-sm leading-relaxed text-[#4f443b]">{previewMap.get(featuredPost.id)}</p>
+                    ) : null}
+                    {previewImageMap.get(featuredPost.id) ? (
+                      <div className="mt-3 overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+                        <Image
+                          src={previewImageMap.get(featuredPost.id) ?? ""}
+                          alt={`${featuredPost.title} preview`}
+                          width={1000}
+                          height={560}
+                          unoptimized
+                          className="h-auto w-full object-cover"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {secondaryPosts.length > 0 ? (
+                  <div className="space-y-2 border-t border-[#e2d7c2] pt-5">
+                    {secondaryPosts.map((post) => (
+                      <div key={post.id}>
+                        <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
+                          {formatDate(post.publishedAt)}
+                        </p>
+                        <Link
+                          href={`/blog/${post.slug}`}
+                          className="text-sm font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
+                        >
+                          {post.title}
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div className="mt-auto flex justify-end pt-3">
                 <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
