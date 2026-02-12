@@ -4,6 +4,9 @@ import type { LatestFilm } from "@/lib/types/content";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
 
 const ARCHIVE_PATH = path.join(process.cwd(), "data", "letterboxd-diary.csv");
+const CSV_RECENT_CUTOFF_DATE = "2025-12-01";
+const posterUrlCache = new Map<string, string | undefined>();
+const recentFilmCache = new Map<string, LatestFilm>();
 
 const HEADER_ALIASES: Record<string, string[]> = {
   title: ["name", "title", "film"],
@@ -61,7 +64,13 @@ function parseCsv(data: string): { headers: string[]; rows: string[][] } {
 
 function findHeaderIndex(headers: string[], key: string): number {
   const options = HEADER_ALIASES[key] ?? [];
-  return headers.findIndex((header) => options.includes(header));
+  for (const option of options) {
+    const index = headers.findIndex((header) => header === option);
+    if (index !== -1) {
+      return index;
+    }
+  }
+  return -1;
 }
 
 function ratingToStars(raw: string): string | undefined {
@@ -149,20 +158,36 @@ function readArchive(): LatestFilm[] {
 
 async function fetchPosterFromLetterboxd(url: string): Promise<string | undefined> {
   try {
-    const response = await fetch(url, { next: { revalidate: 86400 } });
+    const response = await fetch(url, {
+      next: { revalidate: 86400 },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; onebeer-bot/1.0)",
+        Accept: "text/html,application/xhtml+xml"
+      }
+    });
     if (!response.ok) {
       return undefined;
     }
     const html = await response.text();
-    const ogImage = html.match(/property="og:image" content="([^"]+)"/i)?.[1];
+    const ogImage =
+      html.match(/property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1] ??
+      html.match(/content=["']([^"']+)["'][^>]*property=["']og:image["']/i)?.[1];
     if (ogImage) {
       return ogImage;
     }
-    const twitterImage = html.match(/name="twitter:image" content="([^"]+)"/i)?.[1];
+    const twitterImage =
+      html.match(/name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)?.[1] ??
+      html.match(/content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i)?.[1];
     return twitterImage || undefined;
   } catch {
     return undefined;
   }
+}
+
+async function fetchPosterWithRetry(url: string): Promise<string | undefined> {
+  const first = await fetchPosterFromLetterboxd(url);
+  if (first) return first;
+  return fetchPosterFromLetterboxd(url);
 }
 
 function normalizeTitleForKey(title: string, year?: string) {
@@ -208,9 +233,57 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
   return Array.from(groups.values()).map(bestFilmForGroup);
 }
 
+function filmIdentityKey(film: LatestFilm) {
+  const year = (film.year ?? "").toLowerCase().trim();
+  const title = normalizeTitleForKey(film.title, year);
+  const date = dateKey(film.watchedAt) || "unknown";
+  return `${title}|${year}|${date}`;
+}
+
+function shouldIncludeArchiveFilm(film: LatestFilm) {
+  const key = dateKey(film.watchedAt);
+  if (!key) return true;
+  return key <= CSV_RECENT_CUTOFF_DATE;
+}
+
+async function fillMissingPosters(films: LatestFilm[]): Promise<LatestFilm[]> {
+  const output: LatestFilm[] = [];
+  const concurrency = 8;
+
+  for (let i = 0; i < films.length; i += concurrency) {
+    const batch = films.slice(i, i + concurrency);
+    const filledBatch = await Promise.all(
+      batch.map(async (film) => {
+        if (film.posterUrl || !film.letterboxdUrl || film.letterboxdUrl === "#") {
+          return film;
+        }
+
+        const cached = posterUrlCache.get(film.letterboxdUrl);
+        if (cached !== undefined) {
+          return { ...film, posterUrl: cached };
+        }
+
+        const posterUrl = await fetchPosterWithRetry(film.letterboxdUrl);
+        posterUrlCache.set(film.letterboxdUrl, posterUrl);
+        return { ...film, posterUrl: posterUrl ?? film.posterUrl };
+      })
+    );
+    output.push(...filledBatch);
+  }
+
+  return output;
+}
+
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
-  const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
-  const combined = [...recent, ...archive];
+  const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(500)]);
+  const filteredArchive = archive.filter(shouldIncludeArchiveFilm);
+
+  for (const film of recent) {
+    recentFilmCache.set(filmIdentityKey(film), film);
+  }
+  const recentWithCache = dedupeByTitleDate([...recent, ...Array.from(recentFilmCache.values())]);
+
+  const combined = [...recentWithCache, ...filteredArchive];
   const sorted = dedupeByTitleDate(combined)
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
@@ -219,15 +292,7 @@ export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
     })
     .slice(0, limit);
 
-  const filled = await Promise.all(
-    sorted.map(async (film) => {
-      if (!film.posterUrl && film.letterboxdUrl) {
-        const posterUrl = await fetchPosterFromLetterboxd(film.letterboxdUrl);
-        return { ...film, posterUrl: posterUrl ?? film.posterUrl };
-      }
-      return film;
-    })
-  );
+  const filled = await fillMissingPosters(sorted);
 
   return filled;
 }
