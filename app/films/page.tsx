@@ -3,61 +3,6 @@ import CopyFilmTitlesButton from "@/components/copy-film-titles-button";
 
 export const revalidate = 3600;
 
-function dateKey(value: string | undefined) {
-  if (!value) return "unknown";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "unknown";
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York"
-  }).format(date);
-}
-
-function normalizeTitle(title: string, year?: string) {
-  const cleaned = title
-    .toLowerCase()
-    .replace(/\(\d{4}\)/g, "")
-    .replace(/,\s*\d{4}/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!year) return cleaned;
-  return cleaned.replace(new RegExp(`\\b${year}\\b`, "g"), "").trim();
-}
-
-function scoreFilm(film: Awaited<ReturnType<typeof getAllFilms>>[number]) {
-  let score = 0;
-  if (film.posterUrl) score += 3;
-  if (film.reviewSnippet) score += 2;
-  if (film.rating) score += 1;
-  return score;
-}
-
-function dedupeFilms(films: Awaited<ReturnType<typeof getAllFilms>>) {
-  const grouped = new Map<string, typeof films>();
-
-  for (const film of films) {
-    const year = film.year ?? "";
-    const title = normalizeTitle(film.title, year);
-    const key = `${title}|${year}|${dateKey(film.watchedAt)}`;
-    const list = grouped.get(key) ?? [];
-    list.push(film);
-    grouped.set(key, list);
-  }
-
-  const merged: typeof films = [];
-  for (const list of grouped.values()) {
-    if (list.length === 1) {
-      merged.push(list[0]);
-      continue;
-    }
-    const best = list.reduce((acc, next) => (scoreFilm(next) > scoreFilm(acc) ? next : acc), list[0]);
-    merged.push(best);
-  }
-
-  return merged;
-}
-
 function formatPlayedAt(value: string | undefined) {
   if (!value) {
     return "Recently";
@@ -77,7 +22,7 @@ function formatPlayedAt(value: string | undefined) {
 }
 
 export default async function FilmsPage() {
-  const films = dedupeFilms(await getAllFilms(500));
+  const films = await getAllFilms(500);
 
   return (
     <div className="space-y-8">
