@@ -66,9 +66,14 @@ export default async function Home() {
     getRecentFilms(24)
   ]);
   const latestPost = posts[0];
-  const latestPostDetail = latestPost ? await getPostBySlug(latestPost.slug) : null;
-  const latestPreview = latestPostDetail ? getPostPreview(latestPostDetail.content) : "";
   const recentPosts = posts.slice(0, 3);
+  const postPreviews = await Promise.all(
+    recentPosts.map(async (post) => {
+      const postDetail = await getPostBySlug(post.slug);
+      return [post.id, getPostPreview(postDetail?.content)] as const;
+    })
+  );
+  const previewMap = new Map(postPreviews);
   const recentThreeFilms = recentFilms.slice(0, 3);
   const subjectLines = await Promise.all(
     recentPosts.map(async (post) => ({
@@ -85,6 +90,11 @@ export default async function Home() {
         <article className="paper-card p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest writing</h2>
+            {latestPost ? (
+              <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
+                View all
+              </Link>
+            ) : null}
           </div>
           {latestPost ? (
             <div className="mt-2 space-y-3">
@@ -101,16 +111,11 @@ export default async function Home() {
                   ) : post.excerpt ? (
                     <p className="text-sm leading-relaxed text-[#4f443b]">{post.excerpt}</p>
                   ) : null}
-                  {post.id === latestPost?.id && latestPreview ? (
-                    <p className="text-sm leading-relaxed text-[#4f443b]">{latestPreview}</p>
+                  {!subjectMap.get(post.id) && !post.excerpt && previewMap.get(post.id) ? (
+                    <p className="text-sm leading-relaxed text-[#4f443b]">{previewMap.get(post.id)}</p>
                   ) : null}
                 </div>
               ))}
-              <div className="flex justify-end">
-                <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
-                  View all
-                </Link>
-              </div>
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">
