@@ -100,6 +100,10 @@ export default async function Home() {
   const recentThreeFilms = recentFilms.slice(0, 3);
   const featuredPost = recentPosts[0];
   const secondaryPosts = recentPosts.slice(1, 3);
+  const featuredImageUrl =
+    (featuredPost ? previewImageMap.get(featuredPost.id) : "") ||
+    recentPosts.map((post) => previewImageMap.get(post.id) ?? "").find((value) => Boolean(value)) ||
+    "";
   const subjectLines = await Promise.all(
     recentPosts.map(async (post) => ({
       id: post.id,
@@ -138,10 +142,10 @@ export default async function Home() {
                     {!subjectMap.get(featuredPost.id) && !featuredPost.excerpt && previewMap.get(featuredPost.id) ? (
                       <p className="text-sm leading-relaxed text-[#4f443b]">{previewMap.get(featuredPost.id)}</p>
                     ) : null}
-                    {previewImageMap.get(featuredPost.id) ? (
-                      <div className="mt-3 overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+                    {featuredImageUrl ? (
+                      <div className="mt-4 overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
                         <Image
-                          src={previewImageMap.get(featuredPost.id) ?? ""}
+                          src={featuredImageUrl}
                           alt={`${featuredPost.title} preview`}
                           width={1000}
                           height={560}
