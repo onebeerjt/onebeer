@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
 import { getPostBySlug, getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
@@ -59,6 +60,23 @@ function getPostPreview(content: unknown) {
   return "";
 }
 
+function getPostPreviewImage(content: unknown) {
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  for (const block of content) {
+    if (!block || typeof block !== "object") continue;
+    const type = (block as { type?: string }).type ?? "";
+    const url = (block as { url?: string }).url ?? "";
+    if (type === "image" && url) {
+      return url;
+    }
+  }
+
+  return "";
+}
+
 export default async function Home() {
   const [posts, recentTracks, recentFilms] = await Promise.all([
     getPublishedPosts(),
@@ -67,13 +85,18 @@ export default async function Home() {
   ]);
   const latestPost = posts[0];
   const recentPosts = posts.slice(0, 3);
-  const postPreviews = await Promise.all(
+  const postPreviewData = await Promise.all(
     recentPosts.map(async (post) => {
       const postDetail = await getPostBySlug(post.slug);
-      return [post.id, getPostPreview(postDetail?.content)] as const;
+      return {
+        id: post.id,
+        preview: getPostPreview(postDetail?.content),
+        imageUrl: getPostPreviewImage(postDetail?.content)
+      };
     })
   );
-  const previewMap = new Map(postPreviews);
+  const previewMap = new Map(postPreviewData.map((entry) => [entry.id, entry.preview]));
+  const previewImageMap = new Map(postPreviewData.map((entry) => [entry.id, entry.imageUrl]));
   const recentThreeFilms = recentFilms.slice(0, 3);
   const subjectLines = await Promise.all(
     recentPosts.map(async (post) => ({
@@ -87,17 +110,13 @@ export default async function Home() {
     <div className="space-y-10">
 
       <section className="grid gap-4 sm:grid-cols-2">
-        <article className="paper-card p-5">
+        <article className="paper-card flex h-full flex-col p-5">
           <div className="flex items-center justify-between">
             <h2 className="font-serif text-xl font-semibold text-[#1f1a16]">Latest writing</h2>
-            {latestPost ? (
-              <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
-                View all
-              </Link>
-            ) : null}
           </div>
           {latestPost ? (
-            <div className="mt-2 space-y-3">
+            <div className="mt-2 flex flex-1 flex-col">
+              <div className="space-y-3">
               {recentPosts.map((post) => (
                 <div key={post.id} className="border-t border-[#e2d7c2] pt-3 first:border-t-0 first:pt-0">
                   <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#7f7468]">
@@ -114,8 +133,26 @@ export default async function Home() {
                   {!subjectMap.get(post.id) && !post.excerpt && previewMap.get(post.id) ? (
                     <p className="text-sm leading-relaxed text-[#4f443b]">{previewMap.get(post.id)}</p>
                   ) : null}
+                  {post.id === latestPost.id && previewImageMap.get(post.id) ? (
+                    <div className="mt-2 overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+                      <Image
+                        src={previewImageMap.get(post.id) ?? ""}
+                        alt={`${post.title} preview`}
+                        width={1000}
+                        height={560}
+                        unoptimized
+                        className="h-auto w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
                 </div>
               ))}
+              </div>
+              <div className="mt-auto flex justify-end pt-3">
+                <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#8f1f1f] hover:underline">
+                  View all
+                </Link>
+              </div>
             </div>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-[#4f443b]">
