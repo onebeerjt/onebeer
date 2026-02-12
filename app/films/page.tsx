@@ -1,4 +1,5 @@
 import { getAllFilms } from "@/lib/letterboxd/archive";
+import CopyFilmTitlesButton from "@/components/copy-film-titles-button";
 
 export const revalidate = 3600;
 
@@ -82,9 +83,12 @@ export default async function FilmsPage() {
     <div className="space-y-8">
       <section className="space-y-2">
         <h1 className="font-serif text-3xl font-semibold text-[#1f1a16] sm:text-5xl">Films</h1>
-        <p className="max-w-2xl text-sm text-[#6a5f55]">
-          Everything pulled from JT&apos;s Letterboxd feed. New logs appear automatically.
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="max-w-2xl text-sm text-[#6a5f55]">
+            Everything pulled from JT&apos;s Letterboxd feed. New logs appear automatically.
+          </p>
+          <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
+        </div>
       </section>
 
       {films.length === 0 ? (

@@ -13,6 +13,10 @@ type NotionBlockResponse = {
   results?: NotionBlock[];
 };
 
+type NotionPageResponse = {
+  last_edited_time?: string;
+};
+
 function normalizePageId(input: string) {
   const trimmed = input.trim();
   if (!trimmed) {
@@ -58,36 +62,53 @@ function getBlockText(block: NotionBlock): string {
   return "";
 }
 
+export type StatusNote = {
+  note: string | null;
+  updatedAt: string | null;
+};
+
 export async function getStatusNote(): Promise<string | null> {
+  const status = await getStatusInfo();
+  return status.note;
+}
+
+export async function getStatusInfo(): Promise<StatusNote> {
   const token = process.env.NOTION_TOKEN;
   const pageIdRaw = process.env.NOTION_STATUS_PAGE_ID;
 
   if (!token || !pageIdRaw) {
-    return null;
+    return { note: null, updatedAt: null };
   }
 
   const pageId = normalizePageId(pageIdRaw);
   if (!pageId) {
-    return null;
+    return { note: null, updatedAt: null };
   }
 
-  const response = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=10`, {
-    headers: notionHeaders(token),
-    next: { revalidate: 60 }
-  });
+  const [pageResponse, blocksResponse] = await Promise.all([
+    fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+      headers: notionHeaders(token),
+      next: { revalidate: 60 }
+    }),
+    fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=10`, {
+      headers: notionHeaders(token),
+      next: { revalidate: 60 }
+    })
+  ]);
 
-  if (!response.ok) {
-    return null;
+  if (!pageResponse.ok || !blocksResponse.ok) {
+    return { note: null, updatedAt: null };
   }
 
-  const data = (await response.json()) as NotionBlockResponse;
-  const blocks = data.results ?? [];
+  const pageData = (await pageResponse.json()) as NotionPageResponse;
+  const blocksData = (await blocksResponse.json()) as NotionBlockResponse;
+  const blocks = blocksData.results ?? [];
   for (const block of blocks) {
     const text = getBlockText(block);
     if (text) {
-      return text;
+      return { note: text, updatedAt: pageData.last_edited_time ?? null };
     }
   }
 
-  return null;
+  return { note: null, updatedAt: pageData.last_edited_time ?? null };
 }
