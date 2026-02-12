@@ -4,7 +4,6 @@ import type { LatestFilm } from "@/lib/types/content";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
 
 const ARCHIVE_PATH = path.join(process.cwd(), "data", "letterboxd-diary.csv");
-const CSV_RECENT_CUTOFF_DATE = "2025-12-01";
 const posterUrlCache = new Map<string, string | undefined>();
 const recentFilmCache = new Map<string, LatestFilm>();
 
@@ -240,10 +239,11 @@ function filmIdentityKey(film: LatestFilm) {
   return `${title}|${year}|${date}`;
 }
 
-function shouldIncludeArchiveFilm(film: LatestFilm) {
+function shouldIncludeArchiveFilm(film: LatestFilm, cutoffDateKey: string | null) {
+  if (!cutoffDateKey) return true;
   const key = dateKey(film.watchedAt);
   if (!key) return true;
-  return key <= CSV_RECENT_CUTOFF_DATE;
+  return key < cutoffDateKey;
 }
 
 async function fillMissingPosters(films: LatestFilm[]): Promise<LatestFilm[]> {
@@ -276,12 +276,16 @@ async function fillMissingPosters(films: LatestFilm[]): Promise<LatestFilm[]> {
 
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(500)]);
-  const filteredArchive = archive.filter(shouldIncludeArchiveFilm);
 
   for (const film of recent) {
     recentFilmCache.set(filmIdentityKey(film), film);
   }
   const recentWithCache = dedupeByTitleDate([...recent, ...Array.from(recentFilmCache.values())]);
+  const recentDateKeys = recentWithCache
+    .map((film) => dateKey(film.watchedAt))
+    .filter((value): value is string => Boolean(value));
+  const cutoffDateKey = recentDateKeys.length > 0 ? [...recentDateKeys].sort()[0] : null;
+  const filteredArchive = archive.filter((film) => shouldIncludeArchiveFilm(film, cutoffDateKey));
 
   const combined = [...recentWithCache, ...filteredArchive];
   const sorted = dedupeByTitleDate(combined)
