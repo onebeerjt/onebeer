@@ -87,7 +87,7 @@ export default async function FilmsPage() {
           <p className="max-w-2xl text-sm text-[#6a5f55]">
             Everything pulled from JT&apos;s Letterboxd feed. New logs appear automatically.
           </p>
-          <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
+          <CopyFilmTitlesButton films={films.map((film) => ({ title: film.title, rating: film.rating }))} />
         </div>
       </section>
 
