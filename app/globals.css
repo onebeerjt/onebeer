@@ -9,6 +9,9 @@
   --muted: #6a5f55;
   --accent: #8f1f1f;
   --line: #cdbfa6;
+  --bg-glow: rgba(255, 255, 255, 0.55);
+  --bg-from: #f9f3e6;
+  --bg-to: #efe6d4;
 }
 
 html,
@@ -19,8 +22,9 @@ body {
 body {
   @apply text-zinc-900 antialiased;
   background:
-    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.55) 0%, transparent 40%),
-    linear-gradient(180deg, #f9f3e6 0%, #efe6d4 100%);
+    radial-gradient(circle at 20% 10%, var(--bg-glow) 0%, transparent 40%),
+    linear-gradient(180deg, var(--bg-from) 0%, var(--bg-to) 100%);
+  transition: background 280ms ease-in-out;
   color: var(--ink);
 }
 

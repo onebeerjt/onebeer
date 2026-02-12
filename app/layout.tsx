@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BackgroundRandomizer } from "@/components/background-randomizer";
 import { NowPlayingBar } from "@/components/now-playing-bar";
 import { getStatusInfo } from "@/lib/notion/status";
 import "./globals.css";
@@ -117,6 +118,7 @@ export default async function RootLayout({
                 <Link href="/films" className="transition-colors hover:text-[#8f1f1f]">
                   Films
                 </Link>
+                <BackgroundRandomizer />
               </nav>
             </div>
           </header>
