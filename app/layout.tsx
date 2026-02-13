@@ -118,6 +118,9 @@ export default async function RootLayout({
                 <Link href="/films" className="transition-colors hover:text-[#8f1f1f]">
                   Films
                 </Link>
+                <Link href="/lab" className="transition-colors hover:text-[#8f1f1f]">
+                  Lab
+                </Link>
                 <BackgroundRandomizer />
               </nav>
             </div>
