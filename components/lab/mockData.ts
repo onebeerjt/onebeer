@@ -6,7 +6,8 @@ export const mockLabData: LabData = {
     artist: "Roc Marciano",
     albumArt: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/9c/1a/7a/9c1a7a63-bc84-bf6f-5d3e-7cc317f6a262/196588248004.jpg/600x600bb.jpg",
     url: "#",
-    isPlaying: true
+    isPlaying: true,
+    playedAt: "2026-02-13T00:40:00-05:00"
   },
   lastFilm: {
     title: "Ex Machina",

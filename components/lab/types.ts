@@ -38,6 +38,7 @@ export type LabTrackItem = {
   albumArt?: string;
   url?: string;
   isPlaying?: boolean;
+  playedAt?: string;
 };
 
 export type LabData = {

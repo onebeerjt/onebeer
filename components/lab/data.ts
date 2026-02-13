@@ -69,7 +69,8 @@ export async function getLabData(): Promise<LabData> {
         artist: tracks[0].artist,
         albumArt: tracks[0].albumArt,
         url: tracks[0].url,
-        isPlaying: tracks[0].isPlaying
+        isPlaying: tracks[0].isPlaying,
+        playedAt: tracks[0].playedAt
       }
     : null;
 
