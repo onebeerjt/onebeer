@@ -4,6 +4,7 @@ import { getPublishedPosts } from "@/lib/notion/posts";
 import { getStatusInfo } from "@/lib/notion/status";
 import { mockLabData } from "@/components/lab/mockData";
 import type { LabData } from "@/components/lab/types";
+import { normalizeStatus } from "@/components/lab/status";
 
 const LAB_USE_MOCK = process.env.LAB_USE_MOCK_DATA === "true";
 
@@ -30,20 +31,19 @@ const onTapFallback: LabData["onTap"] = [
 
 function mapStatus(note: string | null, updatedAt: string | null): LabData["status"] {
   if (!note) {
-    return {
+    return normalizeStatus({
       type: "vibe",
       title: "Headphones on, building",
       subtitle: "No status note in Notion yet.",
       emoji: "🧠"
-    };
+    });
   }
 
-  return {
-    type: "vibe",
+  return normalizeStatus({
     title: note,
     subtitle: updatedAt ? `Updated ${new Date(updatedAt).toLocaleString("en-US", { month: "short", day: "numeric" })}` : undefined,
     emoji: "💬"
-  };
+  });
 }
 
 /*
@@ -83,11 +83,20 @@ export async function getLabData(): Promise<LabData> {
       }
     : null;
 
+  const statusHistory = [
+    mapStatus(statusInfo.note, statusInfo.updatedAt),
+    normalizeStatus("watching game film tonight."),
+    normalizeStatus("building quietly. polishing motion."),
+    normalizeStatus("link: https://onebeer.io/blog"),
+    normalizeStatus("tomorrow meetup after work, say hi.")
+  ].slice(0, 5);
+
   return {
     liveTrack,
     lastFilm,
     thinking: statusInfo.note ?? "quietly refining the system and the signal.",
     status: mapStatus(statusInfo.note, statusInfo.updatedAt),
+    statusHistory,
     onTap: onTapFallback,
     writing: posts.slice(0, 4).map((post) => ({
       id: post.id,

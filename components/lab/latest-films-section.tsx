@@ -7,7 +7,7 @@ type LatestFilmsSectionProps = {
 
 export function LatestFilmsSection({ films }: LatestFilmsSectionProps) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3 motion-safe:animate-[lab-fade-in_0.66s_ease-out]">
       <div className="flex items-end justify-between border-b border-[#cdbfa6] pb-2">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8f1f1f]">Latest Films</p>
         <Link href="/films" className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#6a5f55] hover:text-[#8f1f1f]">

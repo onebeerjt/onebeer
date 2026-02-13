@@ -1,4 +1,5 @@
 export type LabStatus = {
+  id?: string;
   type: "event" | "vibe" | "drop" | "open-invite";
   title: string;
   subtitle?: string;
@@ -9,6 +10,22 @@ export type LabStatus = {
   emoji?: string;
   startsAtIso?: string;
 };
+
+export type StatusInput =
+  | string
+  | {
+      type?: LabStatus["type"];
+      title?: string;
+      message?: string;
+      text?: string;
+      subtitle?: string;
+      time?: string;
+      location?: string;
+      ctaLabel?: string;
+      ctaUrl?: string;
+      emoji?: string;
+      startsAtIso?: string;
+    };
 
 export type LabOnTapItem = {
   tag: "link" | "note" | "drop" | "watch";
@@ -46,6 +63,7 @@ export type LabData = {
   lastFilm: LabFilmItem | null;
   thinking: string;
   status: LabStatus;
+  statusHistory: LabStatus[];
   onTap: LabOnTapItem[];
   writing: LabWritingItem[];
   films: LabFilmItem[];

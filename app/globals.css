@@ -50,4 +50,31 @@ body {
     background: rgba(255, 253, 247, 0.9);
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 10px 24px rgba(60, 40, 20, 0.05);
   }
+
+  .lab-paper {
+    position: relative;
+  }
+
+  .lab-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.08;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(35, 25, 16, 0.5) 0.6px, transparent 0.8px),
+      linear-gradient(to bottom, rgba(120, 102, 82, 0.06), rgba(120, 102, 82, 0));
+    background-size: 3px 3px, 100% 100%;
+  }
+}
+
+@keyframes lab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -1,4 +1,5 @@
 import type { LabData } from "@/components/lab/types";
+import { normalizeStatus } from "@/components/lab/status";
 
 export const mockLabData: LabData = {
   liveTrack: {
@@ -16,7 +17,7 @@ export const mockLabData: LabData = {
     letterboxdUrl: "https://letterboxd.com/film/ex-machina/"
   },
   thinking: "how to make personal websites feel alive without feeling noisy.",
-  status: {
+  status: normalizeStatus({
     type: "event",
     title: "Knicks watch tonight",
     subtitle: "Pulling up with laptop + notes in hand.",
@@ -26,7 +27,14 @@ export const mockLabData: LabData = {
     ctaUrl: "#",
     emoji: "🍺",
     startsAtIso: "2026-02-13T20:00:00-05:00"
-  },
+  }),
+  statusHistory: [
+    normalizeStatus("Tonight watching Knicks at the bar."),
+    normalizeStatus("building a cleaner homepage system."),
+    normalizeStatus("link: https://onebeer.io/lab"),
+    normalizeStatus("meet me after the movie, say hi."),
+    normalizeStatus("thinking through film diary taxonomy.")
+  ],
   onTap: [
     {
       tag: "watch",

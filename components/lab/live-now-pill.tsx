@@ -43,7 +43,7 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
   const [reduceMotion, setReduceMotion] = useState(false);
 
   const marqueeViewportRef = useRef<HTMLSpanElement | null>(null);
-  const marqueeContentRef = useRef<HTMLSpanElement | null>(null);
+  const marqueeMeasureRef = useRef<HTMLSpanElement | null>(null);
   const peekTimerRef = useRef<number | null>(null);
   const pressTimerRef = useRef<number | null>(null);
   const previousScrollY = useRef(0);
@@ -86,7 +86,7 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
   useEffect(() => {
     const checkOverflow = () => {
       const viewport = marqueeViewportRef.current;
-      const content = marqueeContentRef.current;
+      const content = marqueeMeasureRef.current;
       if (!viewport || !content) return;
       setIsOverflowing(content.scrollWidth > viewport.clientWidth + 2);
     };
@@ -135,7 +135,7 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
   }
 
   const shellClass = [
-    "w-full rounded-full border border-[#bfb29a] bg-[rgba(255,251,242,0.72)] shadow-[0_8px_30px_rgba(40,30,20,0.08)] backdrop-blur-md",
+    "w-full overflow-hidden rounded-full border border-[#bfb29a] bg-[rgba(255,251,242,0.72)] shadow-[0_8px_30px_rgba(40,30,20,0.08)] backdrop-blur-md",
     "transition-[transform,border-radius,padding] duration-300 focus-within:ring-2 focus-within:ring-[#8f1f1f]",
     pressed ? "scale-[0.985]" : "scale-100",
     expanded || showPeek ? "rounded-3xl" : "",
@@ -173,16 +173,19 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
               </span>
               <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#5b5148]">Now Playing</span>
               <span ref={marqueeViewportRef} className="relative min-w-0 flex-1 overflow-hidden font-medium text-[#1f1a16]">
+                <span ref={marqueeMeasureRef} className="invisible absolute left-0 top-0 whitespace-nowrap">
+                  {nowPlayingLabel}
+                </span>
                 {isOverflowing && !reduceMotion ? (
                   <span
                     className="inline-flex min-w-full gap-8 whitespace-nowrap motion-safe:animate-[lab-marquee_13s_linear_infinite]"
                     style={{ animationPlayState: pauseMarquee ? "paused" : "running" }}
                   >
-                    <span ref={marqueeContentRef}>{nowPlayingLabel}</span>
+                    <span>{nowPlayingLabel}</span>
                     <span aria-hidden>{nowPlayingLabel}</span>
                   </span>
                 ) : (
-                  <span ref={marqueeContentRef} className="block whitespace-normal break-words">
+                  <span className="block whitespace-normal break-words">
                     {nowPlayingLabel}
                   </span>
                 )}
