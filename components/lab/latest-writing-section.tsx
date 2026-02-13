@@ -23,16 +23,16 @@ export function LatestWritingSection({ writing }: LatestWritingSectionProps) {
 
   return (
     <section className="space-y-3 motion-safe:animate-[lab-fade-in_0.58s_ease-out]">
-      <div className="border-b border-[#cdbfa6] pb-2">
+      <div className="border-b border-[#ccbda4] pb-2">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8f1f1f]">Latest Writing</p>
       </div>
 
       {!lead ? (
         <div className="rounded-lg border border-dashed border-[#cdbfa6] p-4 text-sm text-[#5d5349]">No writing entries yet.</div>
       ) : (
-        <article className="space-y-2 border-b border-[#e2d7c2] pb-4">
+        <article className="space-y-2 border-b border-[#e8dcc8] pb-5">
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#7f7468]">{formatDate(lead.publishedAt)}</p>
-          <Link href={`/blog/${lead.slug}`} className="font-serif text-3xl leading-tight text-[#1f1a16] hover:text-[#8f1f1f]">
+          <Link href={`/blog/${lead.slug}`} className="font-serif text-4xl leading-tight text-[#1f1a16] hover:text-[#8f1f1f]">
             {lead.title}
           </Link>
           {lead.excerpt ? <p className="max-w-prose text-sm leading-relaxed text-[#4f443b]">{lead.excerpt}</p> : null}

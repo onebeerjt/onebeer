@@ -26,22 +26,16 @@ export default async function LabPage() {
     <div className="space-y-8 pb-10">
       <LiveNowPill liveTrack={data.liveTrack} lastFilm={data.lastFilm} thinking={data.thinking} />
 
-      <section
-        className="lab-paper mx-auto w-full max-w-[1040px] rounded-2xl border border-[#cdbfa6] p-5 sm:p-8"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 20% 0%, rgba(255,255,255,0.45), transparent 35%), repeating-linear-gradient(0deg, rgba(110,90,70,0.03) 0px, rgba(110,90,70,0.03) 1px, transparent 1px, transparent 18px), linear-gradient(to bottom, rgba(252,247,238,0.98), rgba(247,240,229,0.98))"
-        }}
-      >
-        <header className="mb-8 border-b border-[#cdbfa6] pb-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#d9ccb6] pb-2">
+      <section className="lab-paper mx-auto w-full max-w-[980px] rounded-xl border border-[#ccbda4] bg-[rgba(252,248,240,0.95)] p-5 sm:p-10">
+        <header className="mb-10 border-b border-[#ccbda4] pb-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-[#e1d4bf] pb-2">
             <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-[#8f1f1f]">Lab Edition</p>
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#6a5f55]">Issue {issueNo}</p>
           </div>
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-5">
             <div>
-              <h1 className="mt-1 font-serif text-5xl leading-none text-[#1f1a16] sm:text-6xl">one beer bulletin</h1>
-              <p className="mt-3 max-w-2xl text-base leading-relaxed text-[#5e5348]">
+              <h1 className="mt-1 font-serif text-5xl leading-[0.95] text-[#1f1a16] sm:text-7xl">one beer bulletin</h1>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-[#5e5348]">
                 Editorial surface for live signals, sharp notes, and film/music pulse checks.
               </p>
             </div>
@@ -49,12 +43,12 @@ export default async function LabPage() {
           </div>
         </header>
 
-        <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="space-y-6">
+        <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="space-y-8">
             <TaproomMarqueeCard status={data.status} history={data.statusHistory} />
             <LatestWritingSection writing={data.writing} />
           </div>
-          <aside className="space-y-6">
+          <aside className="space-y-8">
             <OnTapSection items={data.onTap} />
             <LatestFilmsSection films={data.films} />
           </aside>

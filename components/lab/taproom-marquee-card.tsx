@@ -31,11 +31,8 @@ export function TaproomMarqueeCard({ status, history }: TaproomMarqueeCardProps)
   const addCalendar = calendarHref(status);
 
   return (
-    <section className="relative overflow-hidden rounded-xl border border-[#c7b79e] bg-[rgba(255,252,246,0.88)] p-5 motion-safe:animate-[lab-fade-in_0.5s_ease-out]">
-      <div className="absolute -left-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full border border-[#c7b79e] bg-[#f6eedf]" />
-      <div className="absolute -right-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full border border-[#c7b79e] bg-[#f6eedf]" />
-
-      <div className="mb-4 flex items-center justify-between border-b border-dashed border-[#ccbda4] pb-2">
+    <section className="rounded-xl border border-[#ccbda4] bg-[rgba(255,253,248,0.85)] p-5 motion-safe:animate-[lab-fade-in_0.5s_ease-out]">
+      <div className="mb-4 flex items-center justify-between border-b border-[#e1d4bf] pb-2">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#6a5f55]">Taproom marquee</p>
         <p className="text-sm">
           {status.emoji ?? "🍺"} <span className="text-[#6a5f55]">{status.type}</span>
@@ -43,7 +40,7 @@ export function TaproomMarqueeCard({ status, history }: TaproomMarqueeCardProps)
       </div>
 
       <div className="space-y-2">
-        <h2 className="font-serif text-2xl leading-tight text-[#1f1a16]">{status.title}</h2>
+        <h2 className="font-serif text-3xl leading-tight text-[#1f1a16] sm:text-4xl">{status.title}</h2>
         {status.subtitle ? <p className="text-sm text-[#4d443b]">{status.subtitle}</p> : null}
       </div>
 
@@ -78,7 +75,7 @@ export function TaproomMarqueeCard({ status, history }: TaproomMarqueeCardProps)
       </div>
 
       {history.length > 0 ? (
-        <details className="mt-4 rounded-md border border-[#d8c9b0] bg-[#fffaf1] p-2">
+        <details className="mt-4 rounded-md border border-[#dfd2be] bg-[#fffcf6] p-2">
           <summary className="cursor-pointer list-none font-mono text-[11px] uppercase tracking-[0.16em] text-[#6a5f55]">
             History (last 5)
           </summary>

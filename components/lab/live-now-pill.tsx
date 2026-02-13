@@ -135,10 +135,10 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
   }
 
   const shellClass = [
-    "w-full overflow-hidden rounded-full border border-[#bfb29a] bg-[rgba(255,251,242,0.72)] shadow-[0_8px_30px_rgba(40,30,20,0.08)] backdrop-blur-md",
+    "w-full overflow-hidden rounded-full border border-[#bfb29a] bg-[rgba(255,251,242,0.85)] backdrop-blur-md",
     "transition-[transform,border-radius,padding] duration-300 focus-within:ring-2 focus-within:ring-[#8f1f1f]",
     pressed ? "scale-[0.985]" : "scale-100",
-    expanded || showPeek ? "rounded-3xl" : "",
+    expanded || showPeek ? "rounded-2xl" : "",
     prefs.compactMode ? "px-3 py-2" : "px-4 py-3",
     !expanded && !showPeek && !reduceMotion ? "motion-safe:animate-[lab-breathe_4.8s_ease-in-out_infinite]" : ""
   ].join(" ");
@@ -282,7 +282,7 @@ export function LiveNowPill({ liveTrack, lastFilm, thinking }: LiveNowPillProps)
             transform: scale(1);
           }
           50% {
-            transform: scale(1.008);
+            transform: scale(1.004);
           }
         }
         @keyframes lab-wave {

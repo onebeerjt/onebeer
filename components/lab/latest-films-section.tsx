@@ -8,7 +8,7 @@ type LatestFilmsSectionProps = {
 export function LatestFilmsSection({ films }: LatestFilmsSectionProps) {
   return (
     <section className="space-y-3 motion-safe:animate-[lab-fade-in_0.66s_ease-out]">
-      <div className="flex items-end justify-between border-b border-[#cdbfa6] pb-2">
+      <div className="flex items-end justify-between border-b border-[#ccbda4] pb-2">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#8f1f1f]">Latest Films</p>
         <Link href="/films" className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#6a5f55] hover:text-[#8f1f1f]">
           View archive
@@ -25,7 +25,7 @@ export function LatestFilmsSection({ films }: LatestFilmsSectionProps) {
               href={film.letterboxdUrl}
               target="_blank"
               rel="noreferrer"
-              className="group rounded-lg border border-[#d9ccb6] bg-[rgba(255,252,246,0.9)] p-2 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="group rounded-lg border border-[#ddd0bb] bg-[rgba(255,252,246,0.9)] p-2 transition-transform duration-200 hover:-translate-y-0.5"
             >
               <div className="aspect-[2/3] overflow-hidden rounded border border-[#cdbfa6] bg-[#ece2cf]">
                 {film.posterUrl ? (
