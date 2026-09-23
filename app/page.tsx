@@ -1,69 +1,13 @@
-import Link from "next/link";
-import Image from "next/image";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getRecentFilms } from "@/lib/letterboxd/latest-film";
 import { getPostBySlug, getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
+import { ThemeSwitcher } from "@/components/home/theme-switcher";
+import type { HomeData } from "@/components/home/types";
 
 export const revalidate = 120;
 
-function formatDate(value: string | null | undefined) {
-  if (!value) {
-    return "Unscheduled";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Unscheduled";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "America/New_York"
-  }).format(date);
-}
-
-function formatPlayedAt(value: string | undefined) {
-  if (!value) {
-    return "Playing now";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Recently";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "America/New_York"
-  }).format(date);
-}
-
-function isRecent(value: string | undefined, hours: number) {
-  if (!value) return false;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return false;
-  return Date.now() - date.getTime() < hours * 60 * 60 * 1000;
-}
-
-function LiveDot() {
-  return (
-    <span className="live-dot" aria-label="Recent activity">
-      <span className="live-dot-ping animate-ping" />
-      <span className="live-dot-core" />
-    </span>
-  );
-}
-
 function getPostPreview(content: unknown) {
-  if (!Array.isArray(content)) {
-    return "";
-  }
-
+  if (!Array.isArray(content)) return "";
   for (const block of content) {
     if (!block || typeof block !== "object") continue;
     const type = (block as { type?: string }).type ?? "";
@@ -72,24 +16,17 @@ function getPostPreview(content: unknown) {
     if (type.startsWith("heading")) continue;
     return text.length > 220 ? `${text.slice(0, 220).trim()}...` : text;
   }
-
   return "";
 }
 
 function getPostPreviewImage(content: unknown) {
-  if (!Array.isArray(content)) {
-    return "";
-  }
-
+  if (!Array.isArray(content)) return "";
   for (const block of content) {
     if (!block || typeof block !== "object") continue;
     const type = (block as { type?: string }).type ?? "";
     const url = (block as { url?: string }).url ?? "";
-    if (type === "image" && url) {
-      return url;
-    }
+    if (type === "image" && url) return url;
   }
-
   return "";
 }
 
@@ -99,309 +36,36 @@ export default async function Home() {
     getRecentTracks(24),
     getRecentFilms(24)
   ]);
-  const latestPost = posts[0];
+
   const recentPosts = posts.slice(0, 3);
-  const postPreviewData = await Promise.all(
+  const postDetails = await Promise.all(
     recentPosts.map(async (post) => {
       const postDetail = await getPostBySlug(post.slug);
+      const subject = await getPostSubject(post.id);
       return {
         id: post.id,
         preview: getPostPreview(postDetail?.content),
-        imageUrl: getPostPreviewImage(postDetail?.content)
+        imageUrl: getPostPreviewImage(postDetail?.content),
+        subject
       };
     })
   );
-  const previewMap = new Map(postPreviewData.map((entry) => [entry.id, entry.preview]));
-  const previewImageMap = new Map(postPreviewData.map((entry) => [entry.id, entry.imageUrl]));
-  const recentThreeFilms = recentFilms.slice(0, 3);
-  const subjectLines = await Promise.all(
-    recentPosts.map(async (post) => ({
+  const detailMap = new Map(postDetails.map((entry) => [entry.id, entry]));
+
+  const homeData: HomeData = {
+    posts: recentPosts.map((post) => ({
       id: post.id,
-      subject: await getPostSubject(post.id)
-    }))
-  );
-  const subjectMap = new Map(subjectLines.map((entry) => [entry.id, entry.subject]));
-  const mostRecentFilm = recentFilms[0];
-  const mostRecentTrack = recentTracks[0];
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      publishedAt: post.publishedAt,
+      subject: detailMap.get(post.id)?.subject || undefined,
+      preview: detailMap.get(post.id)?.preview || undefined,
+      imageUrl: detailMap.get(post.id)?.imageUrl || undefined
+    })),
+    films: recentFilms,
+    tracks: recentTracks
+  };
 
-  return (
-    <div className="space-y-10">
-      <section className="grid gap-3 sm:grid-cols-3">
-        <div className="card p-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6f7480]">Latest post</p>
-          {latestPost ? (
-            <Link href={`/blog/${latestPost.slug}`} className="mt-1 block text-sm font-semibold text-[#f2efe9] hover:text-[#ff8a3d]">
-              {latestPost.title}
-            </Link>
-          ) : (
-            <p className="mt-1 text-sm text-[#94989f]">Nothing published yet</p>
-          )}
-        </div>
-        <div className="card p-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6f7480]">Latest film</p>
-          {mostRecentFilm ? (
-            <div className="mt-1 flex items-center gap-2">
-              {isRecent(mostRecentFilm.watchedAt, 24) ? <LiveDot /> : null}
-              <a
-                href={mostRecentFilm.letterboxdUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="truncate text-sm font-semibold text-[#f2efe9] hover:text-[#ff8a3d]"
-              >
-                {mostRecentFilm.title}
-                {mostRecentFilm.rating ? ` — ${mostRecentFilm.rating}` : ""}
-              </a>
-            </div>
-          ) : (
-            <p className="mt-1 text-sm text-[#94989f]">No films logged yet</p>
-          )}
-        </div>
-        <div className="card p-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#6f7480]">Latest track</p>
-          {mostRecentTrack ? (
-            <div className="mt-1 flex items-center gap-2">
-              {mostRecentTrack.isPlaying ? <LiveDot /> : null}
-              <p className="truncate text-sm font-semibold text-[#f2efe9]">
-                {mostRecentTrack.track}
-                <span className="text-[#94989f]"> — {mostRecentTrack.artist}</span>
-              </p>
-            </div>
-          ) : (
-            <p className="mt-1 text-sm text-[#94989f]">No tracks yet</p>
-          )}
-        </div>
-      </section>
-
-      <section className="grid gap-4 sm:grid-cols-2">
-        <article className="card flex h-full flex-col p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-xl font-semibold text-[#f2efe9]">Latest writing</h2>
-          </div>
-          {latestPost ? (
-            <div className="mt-2 flex flex-1 flex-col">
-              <div className="space-y-3">
-              {recentPosts.map((post) => (
-                <div key={post.id} className="border-t border-[#1b1f26] pt-3 first:border-t-0 first:pt-0">
-                  <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#6f7480]">
-                    {formatDate(post.publishedAt)}
-                  </p>
-                  <Link href={`/blog/${post.slug}`} className="text-base font-semibold text-[#f2efe9] hover:text-[#ff8a3d] hover:underline">
-                    {post.title}
-                  </Link>
-                  {subjectMap.get(post.id) ? (
-                    <p className="text-sm italic leading-relaxed text-[#94989f]">{subjectMap.get(post.id)}</p>
-                  ) : post.excerpt ? (
-                    <p className="text-sm leading-relaxed text-[#94989f]">{post.excerpt}</p>
-                  ) : null}
-                  {!subjectMap.get(post.id) && !post.excerpt && previewMap.get(post.id) ? (
-                    <p className="text-sm leading-relaxed text-[#94989f]">{previewMap.get(post.id)}</p>
-                  ) : null}
-                  {post.id === latestPost.id && previewImageMap.get(post.id) ? (
-                    <div className="mt-2 overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
-                      <Image
-                        src={previewImageMap.get(post.id) ?? ""}
-                        alt={`${post.title} preview`}
-                        width={1000}
-                        height={560}
-                        unoptimized
-                        className="h-auto w-full object-cover"
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-              </div>
-              <div className="mt-auto flex justify-end pt-3">
-                <Link href="/blog" className="font-mono text-xs uppercase tracking-[0.16em] text-[#ff8a3d] hover:underline">
-                  View all
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <p className="mt-2 text-sm leading-relaxed text-[#94989f]">
-              No published Notion posts found yet. Publish one and it will appear here.
-            </p>
-          )}
-        </article>
-
-        <article className="card p-5">
-          <h2 className="font-serif text-xl font-semibold text-[#f2efe9]">Latest films</h2>
-          {recentThreeFilms.length > 0 ? (
-            <div className="mt-3">
-              <div className="grid grid-cols-3 gap-3 overflow-visible">
-                {recentThreeFilms.map((film, index) => (
-                  <a
-                    key={`${film.letterboxdUrl}-${index}`}
-                    href={film.letterboxdUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative z-10 flex h-44 w-full flex-none items-end overflow-visible rounded-lg bg-[#1b1f26] shadow-sm hover:shadow-md md:hover:z-50"
-                    aria-label={`${film.title} poster`}
-                  >
-                    {film.posterUrl ? (
-                      <div
-                        className="h-full w-full bg-contain bg-center bg-no-repeat transition-transform duration-200 group-hover:scale-[1.02]"
-                        style={{ backgroundImage: `url(${film.posterUrl})` }}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-[10px] text-[#6f7480]">No Art</div>
-                    )}
-                    <div className="pointer-events-none fixed inset-0 z-[70] hidden items-center justify-center md:group-hover:flex">
-                      <div className="relative z-10 rounded-3xl border border-[#262b33] bg-[#14171c] p-4 shadow-2xl">
-                        {film.posterUrl ? (
-                          <div className="flex flex-col items-center gap-3">
-                            <div
-                              className="h-[520px] w-[340px] bg-contain bg-center bg-no-repeat"
-                              style={{ backgroundImage: `url(${film.posterUrl})` }}
-                              aria-label={`${film.title} large poster`}
-                            />
-                            <div className="rounded-full border border-[#262b33] bg-[#1b1f26] px-4 py-1 text-base font-semibold text-[#f2efe9]">
-                              {film.rating ?? "No rating"}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex h-[520px] w-[340px] items-center justify-center text-sm text-[#6f7480]">No Art</div>
-                        )}
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-3 border-t border-[#1b1f26] pt-3">
-                {recentThreeFilms.map((film, index) => (
-                  <div key={`${film.letterboxdUrl}-stars-${index}`} className="text-center">
-                    <p className="font-mono text-base uppercase tracking-[0.2em] text-[#94989f]">
-                      {film.rating ?? "No rating"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className="mt-2 text-sm leading-relaxed text-[#94989f]">
-              No Letterboxd activity found yet. Confirm your RSS URL and recent activity.
-            </p>
-          )}
-        </article>
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#ff8a3d]">Movies</p>
-          <h2 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-[#f2efe9]">Recent films</h2>
-        </div>
-
-        {recentFilms.length === 0 ? (
-          <div className="card border-dashed p-6">
-            <p className="text-sm leading-relaxed text-[#94989f]">No recent Letterboxd films found yet.</p>
-          </div>
-        ) : (
-          <div className="grid gap-2 md:grid-cols-2">
-            {recentFilms.map((film, index) => (
-              <article
-                key={`${film.letterboxdUrl}-${index}`}
-                className="card card-hover group relative flex items-start gap-4 p-3 transition-transform duration-200 md:hover:-translate-y-1 md:hover:scale-[1.02] md:hover:shadow-xl"
-              >
-                <div className="h-16 w-12 flex-none overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
-                  {film.posterUrl ? (
-                    <div
-                      className="h-full w-full bg-cover bg-center transition-transform duration-200 md:group-hover:scale-110"
-                      style={{ backgroundImage: `url(${film.posterUrl})` }}
-                      aria-label={`${film.title} poster`}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-[#6f7480]">No Art</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <a
-                    href={film.letterboxdUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="truncate text-sm font-semibold text-[#f2efe9] hover:text-[#ff8a3d] hover:underline"
-                  >
-                    {film.title}
-                    {film.year ? ` (${film.year})` : ""}
-                    {film.rating ? ` - ${film.rating}` : ""}
-                  </a>
-                  <p className="font-mono text-xs text-[#6f7480]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
-                  {film.reviewSnippet ? <p className="mt-1 text-sm text-[#94989f]">{film.reviewSnippet}</p> : null}
-                </div>
-                {film.reviewSnippet ? (
-                  <div className="pointer-events-none absolute inset-0 hidden rounded-lg border border-[#262b33] bg-[#14171c] p-4 shadow-2xl md:flex md:items-center md:gap-4 md:opacity-0 md:transition md:duration-200 md:group-hover:opacity-100">
-                    <div className="h-28 w-20 flex-none overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
-                      {film.posterUrl ? (
-                        <div
-                          className="h-full w-full bg-cover bg-center"
-                          style={{ backgroundImage: `url(${film.posterUrl})` }}
-                          aria-label={`${film.title} poster`}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] text-[#6f7480]">No Art</div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-base font-semibold text-[#f2efe9]">
-                        {film.title}
-                        {film.year ? ` (${film.year})` : ""}
-                        {film.rating ? ` - ${film.rating}` : ""}
-                      </p>
-                      <p className="font-mono text-xs uppercase tracking-[0.16em] text-[#6f7480]">
-                        {film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}
-                      </p>
-                      <p className="mt-2 text-sm text-[#94989f]">{film.reviewSnippet}</p>
-                    </div>
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-4">
-        <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#3ee089]">Music</p>
-          <h2 className="mt-1 font-serif text-3xl font-semibold tracking-tight text-[#f2efe9]">Recent tracks</h2>
-        </div>
-
-        {recentTracks.length === 0 ? (
-          <div className="card border-dashed p-6">
-            <p className="text-sm leading-relaxed text-[#94989f]">
-              No recent Last.fm tracks found yet. Check your Last.fm username and API key.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-2 md:grid-cols-2">
-            {recentTracks.map((track, index) => (
-              <article
-                key={`${track.track}-${track.artist}-${track.playedAt ?? index}`}
-                className="card card-hover flex items-center gap-4 p-3"
-              >
-                <div className="h-14 w-14 flex-none overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
-                  {track.albumArt ? (
-                    <div
-                      className="h-full w-full bg-cover bg-center"
-                      style={{ backgroundImage: `url(${track.albumArt})` }}
-                      aria-label={`${track.album ?? track.track} artwork`}
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-[#6f7480]">No Art</div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#f2efe9]">{track.track}</p>
-                  <p className="truncate text-sm text-[#94989f]">{track.artist}</p>
-                  <p className="flex items-center gap-1.5 font-mono text-xs text-[#6f7480]">
-                    {track.isPlaying ? <LiveDot /> : null}
-                    {track.isPlaying ? "Now playing" : formatPlayedAt(track.playedAt)}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
+  return <ThemeSwitcher data={homeData} />;
 }

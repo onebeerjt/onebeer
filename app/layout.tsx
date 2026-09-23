@@ -78,7 +78,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className="font-sans">
         <PulseBar />
-        <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-8 pt-6 sm:px-6">
+        <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-24 pt-6 sm:px-6">
           <header className="mb-8 border-b border-[#1b1f26] pb-5">
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div className="space-y-2">
