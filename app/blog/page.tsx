@@ -32,27 +32,27 @@ export default async function BlogIndexPage() {
   return (
     <section className="space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Blog</p>
-        <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight text-zinc-900">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6f7480]">Blog</p>
+        <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight text-[#f2efe9]">
           Latest writing
         </h1>
       </div>
 
       {posts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-300 bg-white p-6">
-          <p className="text-sm leading-relaxed text-zinc-700">
+        <div className="card border-dashed p-6">
+          <p className="text-sm leading-relaxed text-[#94989f]">
             No published posts found yet. Make sure the Notion database is shared with your integration.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {posts.map((post) => (
-            <article key={post.id} className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">{formatDate(post.publishedAt)}</p>
-              <Link href={`/blog/${post.slug}`} className="mt-1 block font-serif text-2xl font-semibold text-zinc-900 hover:underline">
+            <article key={post.id} className="card card-hover p-5">
+              <p className="text-xs uppercase tracking-[0.14em] text-[#6f7480]">{formatDate(post.publishedAt)}</p>
+              <Link href={`/blog/${post.slug}`} className="mt-1 block font-serif text-2xl font-semibold text-[#f2efe9] hover:text-[#ff8a3d] hover:underline">
                 {post.title}
               </Link>
-              {post.excerpt ? <p className="mt-2 text-sm leading-relaxed text-zinc-700">{post.excerpt}</p> : null}
+              {post.excerpt ? <p className="mt-2 text-sm leading-relaxed text-[#94989f]">{post.excerpt}</p> : null}
             </article>
           ))}
         </div>

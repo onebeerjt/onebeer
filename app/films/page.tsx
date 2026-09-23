@@ -82,9 +82,9 @@ export default async function FilmsPage() {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <h1 className="font-serif text-3xl font-semibold text-[#1f1a16] sm:text-5xl">Films</h1>
+        <h1 className="font-serif text-3xl font-semibold text-[#f2efe9] sm:text-5xl">Films</h1>
         <div className="flex flex-wrap items-center gap-3">
-          <p className="max-w-2xl text-sm text-[#6a5f55]">
+          <p className="max-w-2xl text-sm text-[#94989f]">
             Everything pulled from JT&apos;s Letterboxd feed. New logs appear automatically.
           </p>
           <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
@@ -92,17 +92,17 @@ export default async function FilmsPage() {
       </section>
 
       {films.length === 0 ? (
-        <div className="paper-card border-dashed p-6">
-          <p className="text-sm leading-relaxed text-[#4f443b]">No Letterboxd activity found yet.</p>
+        <div className="card border-dashed p-6">
+          <p className="text-sm leading-relaxed text-[#94989f]">No Letterboxd activity found yet.</p>
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {films.map((film, index) => (
             <article
               key={`${film.letterboxdUrl}-${index}`}
-              className="paper-card group relative flex items-start gap-4 p-4 transition-transform duration-200 md:hover:-translate-y-1 md:hover:shadow-xl"
+              className="card card-hover group relative flex items-start gap-4 p-4 transition-transform duration-200 md:hover:-translate-y-1 md:hover:shadow-xl"
             >
-              <div className="h-20 w-14 flex-none overflow-hidden rounded-md border border-[#cdbfa6] bg-[#ede3cf]">
+              <div className="h-20 w-14 flex-none overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
                 {film.posterUrl ? (
                   <div
                     className="h-full w-full bg-cover bg-center transition-transform duration-200 md:group-hover:scale-110"
@@ -110,7 +110,7 @@ export default async function FilmsPage() {
                     aria-label={`${film.title} poster`}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] text-zinc-500">No Art</div>
+                  <div className="flex h-full w-full items-center justify-center text-[10px] text-[#6f7480]">No Art</div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
@@ -118,14 +118,14 @@ export default async function FilmsPage() {
                   href={film.letterboxdUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="truncate text-base font-semibold text-[#1f1a16] hover:text-[#8f1f1f] hover:underline"
+                  className="truncate text-base font-semibold text-[#f2efe9] hover:text-[#ff8a3d] hover:underline"
                 >
                   {film.title}
                   {film.year ? ` (${film.year})` : ""}
                   {film.rating ? ` - ${film.rating}` : ""}
                 </a>
-                <p className="font-mono text-xs text-[#7f7468]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
-                {film.reviewSnippet ? <p className="mt-2 text-sm text-[#4f443b]">{film.reviewSnippet}</p> : null}
+                <p className="font-mono text-xs text-[#6f7480]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
+                {film.reviewSnippet ? <p className="mt-2 text-sm text-[#94989f]">{film.reviewSnippet}</p> : null}
               </div>
             </article>
           ))}

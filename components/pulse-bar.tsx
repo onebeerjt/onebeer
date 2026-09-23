@@ -38,20 +38,7 @@ function formatPlayedTime(iso: string | undefined) {
   return `${diffDays}d ago`;
 }
 
-function formatLabel(track: NowPlayingTrack | null) {
-  if (!track) {
-    return "No recent track";
-  }
-
-  if (track.isPlaying) {
-    return `Now: ${track.track} - ${track.artist}`;
-  }
-
-  const when = formatPlayedTime(track.playedAt);
-  return `Last: ${track.track} - ${track.artist}${when ? ` (${when})` : ""}`;
-}
-
-export function NowPlayingBar() {
+export function PulseBar() {
   const [track, setTrack] = useState<NowPlayingTrack | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -86,24 +73,37 @@ export function NowPlayingBar() {
     };
   }, []);
 
+  const isPlaying = Boolean(track?.isPlaying);
+
   return (
-    <div className="w-full border-b-2 border-[#5d1a1a] bg-[#201818] px-4 py-2 text-xs text-[#f2e9d8] sm:px-6">
-      <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 flex-none overflow-hidden rounded-md border border-[#5d1a1a] bg-[#2b1f1f]">
-            {track?.albumArt ? (
-              <div
-                className="h-full w-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${track.albumArt})` }}
-                aria-label={`${track.album ?? track.track} artwork`}
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-[10px] text-[#d7c9b2]">No Art</div>
-            )}
+    <div className="w-full border-b border-[#262b33] bg-[#0d0f12] px-4 py-2 text-xs sm:px-6">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-3">
+        <span className="live-dot" aria-hidden>
+          {isPlaying ? <span className="live-dot-ping animate-ping" /> : null}
+          <span className="live-dot-core" style={!isPlaying ? { opacity: 0.45 } : undefined} />
+        </span>
+        <span className="font-mono font-semibold uppercase tracking-[0.18em] text-[#3ee089]">Pulse</span>
+
+        <div className="h-4 w-px flex-none bg-[#262b33]" aria-hidden />
+
+        {loading ? (
+          <span className="font-mono text-[#6f7480]">Reading the wire...</span>
+        ) : track ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="flex-none font-mono uppercase tracking-[0.1em] text-[#6f7480]">
+              {isPlaying ? "Now" : "Last"}
+            </span>
+            <span className="truncate text-[#f2efe9]">
+              <span className="font-semibold">{track.track}</span>
+              <span className="text-[#94989f]"> — {track.artist}</span>
+            </span>
+            {!isPlaying && track.playedAt ? (
+              <span className="flex-none font-mono text-[#6f7480]">{formatPlayedTime(track.playedAt)}</span>
+            ) : null}
           </div>
-          <p className="font-mono font-medium uppercase tracking-[0.16em]">Now playing</p>
-        </div>
-        <p className="truncate font-mono text-[#d7c9b2]">{loading ? "Loading..." : formatLabel(track)}</p>
+        ) : (
+          <span className="font-mono text-[#6f7480]">No signal yet</span>
+        )}
       </div>
     </div>
   );

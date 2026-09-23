@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { NowPlayingBar } from "@/components/now-playing-bar";
+import { PulseBar } from "@/components/pulse-bar";
 import { getStatusInfo } from "@/lib/notion/status";
 import "./globals.css";
 
@@ -77,51 +77,50 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <NowPlayingBar />
+        <PulseBar />
         <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 pb-8 pt-6 sm:px-6">
-          <header className="mb-6 border-b-2 border-[#cdbfa6] pb-4">
-            <div className="grid gap-4 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+          <header className="mb-8 border-b border-[#1b1f26] pb-5">
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link href="/" className="inline-flex items-baseline gap-3 font-serif text-4xl font-semibold tracking-tight text-[#1f1a16]">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <Link href="/" className="inline-flex items-baseline gap-2 font-serif text-4xl font-semibold tracking-tight text-[#f2efe9]">
                     <span className="text-3xl" aria-hidden>
                       🍺
                     </span>
                     <span>one beer</span>
                   </Link>
-                  <span className="text-xl font-normal text-[#4f443b]">thoughts &amp; streams on tap</span>
-                  {statusNote ? (
-                    <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#1f1a16]">
-                      <span className="text-sm">💬</span>
-                      <span>{statusNote}</span>
-                      {relativeStatusTime ? (
-                        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#6a5f55]">
-                          {relativeStatusTime}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
+                  <span className="font-mono text-sm text-[#94989f]">thoughts &amp; streams on tap</span>
                 </div>
-                <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#6a5f55]">
+                {statusNote ? (
+                  <div className="flex items-center gap-2 text-xs font-medium text-[#c9c5bc]">
+                    <span aria-hidden>💬</span>
+                    <span>{statusNote}</span>
+                    {relativeStatusTime ? (
+                      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#6f7480]">
+                        {relativeStatusTime}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+                <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#6f7480]">
                   JT (@onebeerjt) / personal wire
                 </p>
               </div>
-              <span className="hidden sm:block" />
-              <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#6a5f55] sm:justify-end">
-                <Link href="/" className="transition-colors hover:text-[#8f1f1f]">
+              <nav className="flex items-center gap-5 font-mono text-xs uppercase tracking-[0.16em] text-[#94989f] sm:justify-end">
+                <Link href="/" className="transition-colors hover:text-[#ff8a3d]">
                   Home
                 </Link>
-                <Link href="/blog" className="transition-colors hover:text-[#8f1f1f]">
+                <Link href="/blog" className="transition-colors hover:text-[#ff8a3d]">
                   Blog
                 </Link>
-                <Link href="/films" className="transition-colors hover:text-[#8f1f1f]">
+                <Link href="/films" className="transition-colors hover:text-[#ff8a3d]">
                   Films
                 </Link>
               </nav>
             </div>
           </header>
           <main className="flex-1">{children}</main>
-          <footer className="mt-16 border-t-2 border-[#cdbfa6] pt-6 text-sm text-[#6a5f55]">
+          <footer className="mt-16 border-t border-[#1b1f26] pt-6 text-sm text-[#6f7480]">
             <p>Miami based, cerveza fueled, vibe coded.</p>
           </footer>
         </div>

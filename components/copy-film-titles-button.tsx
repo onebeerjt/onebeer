@@ -28,7 +28,7 @@ export default function CopyFilmTitlesButton({ titles }: CopyFilmTitlesButtonPro
       type="button"
       onClick={handleCopy}
       disabled={!textToCopy}
-      className="inline-flex items-center gap-2 rounded-md border border-[#cdbfa6] bg-[#fffdf7] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#4f443b] transition-colors hover:bg-[#f4ebd8] disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex items-center gap-2 rounded-md border border-[#262b33] bg-[#14171c] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c9c5bc] transition-colors hover:bg-[#1b1f26] disabled:cursor-not-allowed disabled:opacity-50"
       aria-label="Copy film titles"
       title={status === "copied" ? "Copied" : "Copy titles"}
     >
