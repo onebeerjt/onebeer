@@ -60,8 +60,12 @@ function parseCsv(data: string): { headers: string[]; rows: string[][] } {
 }
 
 function findHeaderIndex(headers: string[], key: string): number {
-  const options = HEADER_ALIASES[key] ?? [];
-  return headers.findIndex((header) => options.includes(header));
+  // Aliases are in priority order: a diary export has both "Date" (logged) and "Watched Date".
+  for (const option of HEADER_ALIASES[key] ?? []) {
+    const index = headers.indexOf(option);
+    if (index !== -1) return index;
+  }
+  return -1;
 }
 
 function ratingToStars(raw: string): string | undefined {
@@ -99,6 +103,9 @@ function dateKey(value?: string) {
 function normalizeDate(raw: string): string | undefined {
   if (!raw) {
     return undefined;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return `${raw}T12:00:00.000Z`;
   }
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) {
@@ -211,25 +218,8 @@ function dedupeByTitleDate(items: LatestFilm[]): LatestFilm[] {
 export async function getAllFilms(limit = 500): Promise<LatestFilm[]> {
   const [archive, recent] = await Promise.all([readArchive(), getRecentFilms(200)]);
 
-  const recentDates = recent
-    .map((film) => (film.watchedAt ? new Date(film.watchedAt) : null))
-    .filter((date): date is Date => Boolean(date) && !Number.isNaN(date!.getTime()));
-
-  const oldestRecent = recentDates.length
-    ? new Date(Math.min(...recentDates.map((date) => date.getTime())))
-    : null;
-
-  const archiveOnly = oldestRecent
-    ? archive.filter((film) => {
-        if (!film.watchedAt) return true;
-        const filmDate = new Date(film.watchedAt);
-        if (Number.isNaN(filmDate.getTime())) return true;
-        return filmDate.getTime() < oldestRecent.getTime();
-      })
-    : archive;
-
-  const combined = [...recent, ...archiveOnly];
-  const sorted = dedupeByTitleDate(combined)
+  // Feed and diary entries share title|year|watched-date keys, so overlaps collapse here.
+  const sorted = dedupeByTitleDate([...recent, ...archive])
     .sort((a, b) => {
       const aTime = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
       const bTime = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;

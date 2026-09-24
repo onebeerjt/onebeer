@@ -47,13 +47,7 @@ function dedupeFilms(films: LatestFilm[]) {
   );
 }
 
-function splitTrailingYear(film: LatestFilm): LatestFilm {
-  if (film.year) return film;
-  const match = film.title.match(/^(.*?),\s*(\d{4})$/);
-  return match ? { ...film, title: match[1], year: match[2] } : film;
-}
-
 export async function getCatalogue(): Promise<CatalogueFilm[]> {
-  const films = dedupeFilms((await getAllFilms(500)).map(splitTrailingYear));
+  const films = dedupeFilms(await getAllFilms(500));
   return films.map((film, index) => ({ ...film, spine: films.length - index }));
 }

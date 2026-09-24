@@ -51,7 +51,7 @@ function renderBlock(block: ContentBlock, dropCap: boolean) {
   if (block.type === "bulleted_list_item" || block.type === "numbered_list_item") {
     return (
       <p className="relative pl-7">
-        <span aria-hidden className="absolute left-0 text-holo-pink">
+        <span aria-hidden className="absolute left-0 text-vice-pink">
           ✦
         </span>
         {block.text}
@@ -92,10 +92,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <article className="mx-auto max-w-[760px] py-12">
       <Link href="/blog" className="font-pixel text-[10px] uppercase text-graphite hover:text-ink">
-        ← All dispatches
+        ← Quite Probably
       </Link>
       <div className="mt-6">
-        <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Dispatch</span>
+        <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Quite Probably</span>
       </div>
       <h1 className="mt-4 text-[clamp(40px,6vw,76px)] font-bold leading-[0.98] tracking-[-0.02em]">{post.title}</h1>
       {post.excerpt ? <p className="mt-4 text-[22px] italic leading-snug text-graphite">{post.excerpt}</p> : null}

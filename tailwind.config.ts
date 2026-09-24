@@ -12,11 +12,12 @@ const config: Config = {
         smoke: "#8a8478",
         ash: "#4a4640",
         marquee: "#f2c200",
-        "holo-pink": "#ff4fd8",
-        "holo-violet": "#8a5cff",
-        "holo-cyan": "#3ff0ff",
-        "holo-lime": "#c8ff3a",
-        link: "#1a3fd6"
+        "vice-pink": "#ff2a6d",
+        "vice-magenta": "#ff6ec7",
+        "vice-purple": "#b026ff",
+        "vice-teal": "#05d9e8",
+        "vice-orange": "#ff9e3d",
+        "vice-night": "#12061f"
       },
       fontFamily: {
         fraktur: ["var(--font-fraktur)", "serif"],

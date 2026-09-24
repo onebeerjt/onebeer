@@ -35,26 +35,11 @@ function extractTag(source: string, tag: string) {
   return match?.[1]?.trim() ?? "";
 }
 
-function parseTitle(rawTitle: string) {
-  const cleaned = cleanupText(rawTitle);
-  const ratingMatch = cleaned.match(/\s-\s*([★\u2605]+(?:½)?)\s*$/u);
-  const rating = ratingMatch?.[1];
-
-  const withoutPrefix = cleaned
-    .replace(/^.+\s(rewatched|reviewed|watched)\s/i, "")
-    .replace(/^.+\slogged\s/i, "")
-    .replace(/\s*-\s*[★\u2605\u00bd]+$/u, "")
-    .trim();
-
-  const yearMatch = withoutPrefix.match(/\((\d{4})\)\s*$/);
-  const year = yearMatch?.[1];
-  const title = year ? withoutPrefix.replace(/\(\d{4}\)\s*$/, "").trim() : withoutPrefix;
-
-  return {
-    title: title || cleaned,
-    year,
-    rating
-  };
+function starsFromRating(raw: string) {
+  const score = Number(raw);
+  if (!raw || Number.isNaN(score) || score <= 0) return undefined;
+  const full = Math.floor(score);
+  return "★".repeat(full) + (score - full >= 0.5 ? "½" : "");
 }
 
 function extractPosterUrl(item: string) {
@@ -74,7 +59,7 @@ function extractReviewSnippet(item: string) {
   }
 
   const clean = cleanupText(description);
-  if (!clean) {
+  if (!clean || /^watched on /i.test(clean)) {
     return undefined;
   }
 
@@ -84,21 +69,26 @@ function extractReviewSnippet(item: string) {
 
 function parseItem(item: string): LatestFilm | null {
   const link = extractTag(item, "link");
-  const titleRaw = extractTag(item, "title");
-  const pubDate = extractTag(item, "pubDate");
+  const filmTitle = cleanupText(extractTag(item, "letterboxd:filmTitle"));
 
-  if (!link || !titleRaw) {
+  // Lists and other non-diary activity carry no filmTitle.
+  if (!link || !filmTitle) {
     return null;
   }
 
-  const parsed = parseTitle(titleRaw);
+  const watchedDate = extractTag(item, "letterboxd:watchedDate");
+  const pubDate = extractTag(item, "pubDate");
 
   return {
-    title: parsed.title,
-    year: parsed.year,
-    rating: parsed.rating,
+    title: filmTitle,
+    year: extractTag(item, "letterboxd:filmYear") || undefined,
+    rating: starsFromRating(extractTag(item, "letterboxd:memberRating")),
     letterboxdUrl: link,
-    watchedAt: pubDate ? new Date(pubDate).toISOString() : undefined,
+    watchedAt: /^\d{4}-\d{2}-\d{2}$/.test(watchedDate)
+      ? `${watchedDate}T12:00:00.000Z`
+      : pubDate
+        ? new Date(pubDate).toISOString()
+        : undefined,
     posterUrl: extractPosterUrl(item),
     reviewSnippet: extractReviewSnippet(item)
   };

@@ -11,24 +11,24 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://onebeer.io"),
   title: {
-    default: "The One Beer Pulse",
-    template: "%s | The One Beer Pulse"
+    default: "One Beer",
+    template: "%s | One Beer"
   },
-  description: "All the news that's fit to pour. JT's writing, films, and music.",
+  description: "JT's films, music, and the blog Quite Probably.",
   icons: {
     icon: "/favicon.svg"
   },
   openGraph: {
-    title: "The One Beer Pulse",
-    description: "All the news that's fit to pour. JT's writing, films, and music.",
+    title: "One Beer",
+    description: "JT's films, music, and the blog Quite Probably.",
     url: "https://onebeer.io",
-    siteName: "The One Beer Pulse"
+    siteName: "One Beer"
   }
 };
 
 const NAV = [
   { href: "/", label: "Front page" },
-  { href: "/blog", label: "Writing" },
+  { href: "/blog", label: "Quite Probably" },
   { href: "/films", label: "Films" }
 ];
 
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           <header className="py-6 text-center sm:py-8">
             <Link href="/" className="masthead font-fraktur text-[clamp(46px,10vw,132px)] leading-[0.95]">
-              The One Beer Pulse
+              One Beer
             </Link>
             <p className="mt-3 text-[15px] italic text-graphite sm:text-[17px]">&ldquo;All the news that&apos;s fit to pour&rdquo; — thoughts &amp; streams on tap</p>
           </header>
@@ -77,11 +77,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {NAV.map((item, index) => (
               <span key={item.href} className="flex items-center gap-4 sm:gap-6">
                 {index > 0 ? (
-                  <span aria-hidden className="text-holo-pink">
+                  <span aria-hidden className="text-vice-pink">
                     ✦
                   </span>
                 ) : null}
-                <Link href={item.href} className="decoration-holo-pink decoration-2 underline-offset-4 hover:underline">
+                <Link href={item.href} className="decoration-vice-pink decoration-2 underline-offset-4 hover:underline">
                   {item.label}
                 </Link>
               </span>
@@ -95,7 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
         <footer className="mx-auto mt-20 max-w-[1240px] px-4 pb-12 text-center sm:px-8">
           <div className="border-t-4 border-double border-ink pt-8">
-            <p className="font-fraktur text-[34px] leading-none">The One Beer Pulse</p>
+            <p className="font-fraktur text-[34px] leading-none">One Beer</p>
             <p className="mt-3 italic text-graphite">Miami based, cerveza fueled, vibe coded.</p>
             <p className="mt-4 font-pixel text-[9px] uppercase text-graphite">Printed daily in the metaverse · Written &amp; edited by JT · @onebeerjt</p>
           </div>

@@ -4,7 +4,7 @@ function TickerRow({ items, hidden }: { items: string[]; hidden?: boolean }) {
       {items.map((item, index) => (
         <span key={index} className="flex items-center gap-6 pr-6">
           <span>{item}</span>
-          <span className="text-holo-pink">✦</span>
+          <span className="text-vice-pink">✦</span>
         </span>
       ))}
     </div>
