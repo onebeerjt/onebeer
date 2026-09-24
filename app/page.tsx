@@ -1,226 +1,206 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ChapterCard } from "@/components/chapter-card";
-import { CreditsRoll } from "@/components/credits-roll";
 import { CriterionShelf } from "@/components/criterion-shelf";
-import { Reveal } from "@/components/reveal";
+import { MySpaceProfile, TopEight, type TopArtist } from "@/components/myspace-profile";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getCatalogue } from "@/lib/letterboxd/catalogue";
 import { getPostBySlug, getPostSubject, getPublishedPosts } from "@/lib/notion/posts";
-import { formatLongDate, formatShortDate, padSpine } from "@/lib/format";
+import { getStatusInfo } from "@/lib/notion/status";
+import { formatLongDate } from "@/lib/format";
 import type { NowPlayingTrack } from "@/lib/types/content";
 
 export const revalidate = 300;
 
-function firstParagraph(content: unknown) {
-  if (!Array.isArray(content)) return "";
-  for (const block of content) {
-    if (!block || typeof block !== "object") continue;
-    const type = (block as { type?: string }).type ?? "";
-    const text = (block as { text?: string }).text ?? "";
-    if (!text || type.startsWith("heading")) continue;
-    return text.length > 260 ? `${text.slice(0, 260).trim()}…` : text;
-  }
-  return "";
-}
+type Block = { id: string; type: string; text: string; url?: string };
 
-function dedupeTracks(tracks: NowPlayingTrack[]) {
-  const seen = new Set<string>();
-  return tracks.filter((track) => {
+function topArtists(tracks: NowPlayingTrack[]): TopArtist[] {
+  const counts = new Map<string, TopArtist>();
+  let previous = "";
+
+  for (const track of tracks) {
     const key = `${track.track}|${track.artist}`.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+    if (key === previous) continue;
+    previous = key;
+
+    const entry = counts.get(track.artist) ?? { artist: track.artist, plays: 0 };
+    entry.plays += 1;
+    if (!entry.art && track.albumArt) entry.art = track.albumArt;
+    counts.set(track.artist, entry);
+  }
+
+  return Array.from(counts.values())
+    .sort((a, b) => b.plays - a.plays)
+    .slice(0, 8);
 }
 
-export default async function Home() {
-  const [catalogue, rawTracks, posts] = await Promise.all([getCatalogue(), getRecentTracks(40), getPublishedPosts()]);
+function Kicker({ children }: { children: React.ReactNode }) {
+  return <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase text-ink">{children}</span>;
+}
 
-  const tracks = dedupeTracks(rawTracks).slice(0, 24);
-  const feature = catalogue[0];
-  const shelf = catalogue.slice(1, 25);
+export default async function FrontPage() {
+  const [posts, catalogue, tracks, status] = await Promise.all([
+    getPublishedPosts(),
+    getCatalogue(),
+    getRecentTracks(50),
+    getStatusInfo()
+  ]);
 
-  const scenes = await Promise.all(
-    posts.slice(0, 3).map(async (post) => {
-      const [detail, subject] = await Promise.all([getPostBySlug(post.slug), getPostSubject(post.id)]);
-      return {
-        ...post,
-        action: subject || post.excerpt || firstParagraph(detail?.content)
-      };
-    })
-  );
+  const lead = posts[0];
+  const others = posts.slice(1, 7);
+
+  const [leadDetail, subjects] = await Promise.all([
+    lead ? getPostBySlug(lead.slug) : Promise.resolve(null),
+    Promise.all(posts.slice(0, 7).map((post) => getPostSubject(post.id)))
+  ]);
+
+  const leadBlocks = ((leadDetail?.content as Block[] | undefined) ?? []).filter((block) => block.text || block.url);
+  const leadParagraphs = leadBlocks.filter((block) => block.type === "paragraph" && block.text).slice(0, 4);
+  const leadImage = leadBlocks.find((block) => block.type === "image" && block.url)?.url;
+  const leadDeck = subjects[0] || lead?.excerpt;
+
+  const latestFilm = catalogue[0];
+  const artists = topArtists(tracks);
 
   return (
     <>
-      <section className="projector relative flex h-[100svh] min-h-[560px] items-center justify-center overflow-hidden">
-        {feature?.posterUrl ? (
-          <div
-            aria-hidden
-            className="slow-zoom absolute inset-[-4%] bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${feature.posterUrl})`,
-              filter: "grayscale(1) contrast(1.15) brightness(0.32) blur(2px)"
-            }}
-          />
-        ) : null}
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink" />
+      <div className="grid gap-12 py-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div>
+          {lead ? (
+            <article className="border-b-2 border-ink pb-10">
+              <Kicker>Latest dispatch</Kicker>
+              <h2 className="mt-4 text-[clamp(40px,6vw,78px)] font-bold leading-[0.95] tracking-[-0.02em]">
+                <Link href={`/blog/${lead.slug}`} className="decoration-holo-pink decoration-4 underline-offset-8 hover:underline">
+                  {lead.title}
+                </Link>
+              </h2>
+              {leadDeck ? <p className="mt-4 text-[clamp(20px,2.2vw,26px)] italic leading-snug text-graphite">{leadDeck}</p> : null}
+              <p className="mt-5 border-y border-ink/25 py-2 font-pixel text-[10px] uppercase">
+                By JT · {formatLongDate(lead.publishedAt) ?? "Undated"} · Miami
+              </p>
 
-        <div className="letterbox-bar top-0" aria-hidden />
-        <div className="letterbox-bar bottom-0" aria-hidden />
+              {leadImage ? (
+                <figure className="mt-6 border-2 border-ink">
+                  <Image
+                    src={leadImage}
+                    alt={`${lead.title}`}
+                    width={1400}
+                    height={800}
+                    unoptimized
+                    className="h-auto w-full grayscale transition-[filter] duration-700 hover:grayscale-0"
+                  />
+                </figure>
+              ) : null}
 
-        <div className="relative z-20 flex flex-col items-center px-6 text-center">
-          <p className="credit text-[10px] uppercase tracking-[0.5em] text-bone/70 sm:text-[11px]" style={{ animationDelay: "0.8s" }}>
-            One Beer Pictures presents
-          </p>
-          <p className="credit mt-4 text-[10px] uppercase tracking-[0.5em] text-bone/70 sm:text-[11px]" style={{ animationDelay: "2s" }}>
-            A film by JT
-          </p>
-          <h1
-            className="rise mt-10 font-chapter text-[clamp(84px,19vw,280px)] uppercase leading-[0.82] text-marquee"
-            style={{ animationDelay: "3.1s" }}
-          >
-            One Beer
-          </h1>
-          <p className="rise mt-6 font-criterion text-[clamp(22px,3vw,34px)] italic text-bone" style={{ animationDelay: "3.8s" }}>
-            thoughts &amp; streams on tap
-          </p>
+              {leadParagraphs.length > 0 ? (
+                <div className="mt-6 gap-10 text-[18px] leading-[1.65] md:columns-2 [column-rule:1px_solid_rgba(10,10,10,0.2)]">
+                  {leadParagraphs.map((block, index) => (
+                    <p key={block.id} className={index === 0 ? "drop-cap mb-4" : "mb-4"}>
+                      {block.text}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+
+              <Link
+                href={`/blog/${lead.slug}`}
+                className="mt-6 inline-block font-pixel text-[11px] uppercase decoration-holo-pink decoration-2 underline-offset-4 hover:underline"
+              >
+                Story continues →
+              </Link>
+            </article>
+          ) : (
+            <p className="border-b-2 border-ink pb-10 text-[22px] italic text-graphite">The presses are warming up. First dispatch coming soon.</p>
+          )}
+
+          {others.length > 0 ? (
+            <section className="mt-10">
+              <h3 className="flex items-center gap-4 font-pixel text-[11px] uppercase">
+                <span className="h-px flex-1 bg-ink" />
+                More from the desk
+                <span className="h-px flex-1 bg-ink" />
+              </h3>
+              <div className="mt-8 grid gap-6 md:grid-cols-2">
+                {others.map((post, index) => (
+                  <article
+                    key={post.id}
+                    className="rounded-lg border-2 border-ink bg-white p-5 shadow-[6px_6px_0_#0a0a0a] transition-[transform,box-shadow] hover:-translate-y-1 hover:shadow-[9px_9px_0_#ff4fd8]"
+                  >
+                    <header className="flex items-center gap-3">
+                      <span className="holo-bg grid h-9 w-9 flex-none place-items-center rounded border border-ink font-fraktur text-[18px]">JT</span>
+                      <div>
+                        <p className="font-pixel text-[10px] uppercase">onebeerjt</p>
+                        <p className="text-[12px] text-graphite">{formatLongDate(post.publishedAt) ?? "Undated"}</p>
+                      </div>
+                    </header>
+                    <h4 className="mt-4 text-[28px] font-bold leading-tight">
+                      <Link href={`/blog/${post.slug}`} className="hover:underline">
+                        {post.title}
+                      </Link>
+                    </h4>
+                    {subjects[index + 1] || post.excerpt ? (
+                      <p className="mt-2 text-[17px] italic leading-snug text-graphite">{subjects[index + 1] || post.excerpt}</p>
+                    ) : null}
+                    <Link href={`/blog/${post.slug}`} className="mt-4 inline-block font-pixel text-[10px] uppercase text-link underline underline-offset-2">
+                      Keep reading →
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
 
-        {feature ? (
-          <p
-            className="rise absolute bottom-[calc(9vh+18px)] right-5 z-20 max-w-[60vw] text-right text-[9px] uppercase tracking-[0.3em] text-bone/50 sm:right-8"
-            style={{ animationDelay: "4.6s" }}
-          >
-            Backdrop: {feature.title}
-            {feature.year ? ` (${feature.year})` : ""} — last thing I watched
+        <aside className="space-y-8">
+          <MySpaceProfile
+            mood={status.note}
+            moodUpdatedAt={status.updatedAt}
+            track={tracks[0] ?? null}
+            filmsCount={catalogue.length}
+            postsCount={posts.length}
+          />
+          <TopEight artists={artists} sample={tracks.length} />
+          <section className="border-2 border-dashed border-ink p-5 text-center">
+            <p className="font-pixel text-[10px] uppercase">Miami forecast</p>
+            <p className="mt-1 text-[34px] font-bold leading-none">100% chance</p>
+            <p className="mt-1 italic text-graphite">of one more beer</p>
+          </section>
+        </aside>
+      </div>
+
+      <section className="relative -mx-4 mt-6 overflow-hidden bg-ink px-4 pt-10 text-bone sm:-mx-8 sm:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b-4 border-double border-bone/40 pb-4">
+          <div>
+            <Kicker>Arts &amp; culture</Kicker>
+            <h2 className="mt-3 text-[clamp(40px,5vw,66px)] font-bold leading-none">The Collection</h2>
+          </div>
+          <Link href="/films" className="font-pixel text-[10px] uppercase text-bone/80 hover:text-holo-lime">
+            {catalogue.length} films on the shelf · browse all →
+          </Link>
+        </div>
+
+        {latestFilm ? (
+          <p className="mt-6 max-w-3xl text-[18px] leading-snug">
+            <span className="font-pixel text-[10px] uppercase text-holo-lime">Now showing {latestFilm.rating ?? ""}</span>
+            <br />
+            <a href={latestFilm.letterboxdUrl} target="_blank" rel="noreferrer" className="font-bold hover:underline">
+              {latestFilm.title}
+            </a>
+            {latestFilm.year ? ` (${latestFilm.year})` : ""}
+            {latestFilm.reviewSnippet ? <span className="italic text-bone/75"> — &ldquo;{latestFilm.reviewSnippet}&rdquo;</span> : null}
           </p>
         ) : null}
-        <a
-          href="#chapter-one"
-          className="rise absolute bottom-[calc(9vh+18px)] left-5 z-20 text-[9px] uppercase tracking-[0.4em] text-bone/60 transition-colors hover:text-marquee sm:left-8"
-          style={{ animationDelay: "4.6s" }}
-        >
-          ↓ Roll film
-        </a>
-      </section>
 
-      <ChapterCard id="chapter-one" number="One" title="The Pictures" note="What I've been watching" />
+        <div className="mt-8">
+          {catalogue.length > 0 ? (
+            <CriterionShelf films={catalogue.slice(0, 30)} />
+          ) : (
+            <p className="py-16 text-center italic text-bone/60">The shelf is empty.</p>
+          )}
+        </div>
 
-      {feature ? (
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:gap-16">
-          <Reveal className="mx-auto w-full max-w-[360px] md:max-w-none">
-            <a href={feature.letterboxdUrl} target="_blank" rel="noreferrer" className="group block">
-              <p className="mb-3 text-[10px] uppercase tracking-[0.35em] text-smoke">No. {padSpine(feature.spine)}</p>
-              <div className="aspect-[2/3] w-full overflow-hidden border border-bone/15 bg-ash/30 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)]">
-                {feature.posterUrl ? (
-                  <div
-                    className="h-full w-full bg-cover bg-center grayscale transition-[filter,transform] duration-700 group-hover:scale-[1.02] group-hover:grayscale-0"
-                    style={{ backgroundImage: `url(${feature.posterUrl})` }}
-                    role="img"
-                    aria-label={`${feature.title} poster`}
-                  />
-                ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-4 p-8 text-center">
-                    <span className="text-[9px] uppercase tracking-[0.4em] text-smoke">A picture</span>
-                    <span className="font-criterion text-[clamp(28px,3.4vw,44px)] italic leading-tight text-bone/80">{feature.title}</span>
-                    {feature.year ? <span className="text-[10px] tracking-[0.3em] text-smoke">{feature.year}</span> : null}
-                  </div>
-                )}
-              </div>
-            </a>
-          </Reveal>
-
-          <Reveal delay={250}>
-            <p className="text-[10px] uppercase tracking-[0.42em] text-marquee">Now showing</p>
-            <h2 className="mt-4 font-criterion text-[clamp(44px,6.4vw,92px)] font-medium leading-[0.95] text-bone">{feature.title}</h2>
-            <p className="mt-5 text-[11px] uppercase tracking-[0.3em] text-smoke">
-              {[feature.year, feature.watchedAt ? `Watched ${formatShortDate(feature.watchedAt)}` : null].filter(Boolean).join(" · ")}
-            </p>
-            {feature.rating ? <p className="mt-6 text-[28px] tracking-[0.12em] text-marquee">{feature.rating}</p> : null}
-            {feature.reviewSnippet ? (
-              <blockquote className="relative mt-8 max-w-[34ch] font-criterion text-[clamp(22px,2.4vw,30px)] italic leading-snug text-bone/90">
-                <span aria-hidden className="absolute -left-6 -top-5 font-criterion text-[72px] leading-none text-marquee/60">
-                  &ldquo;
-                </span>
-                {feature.reviewSnippet}
-              </blockquote>
-            ) : null}
-            <a
-              href={feature.letterboxdUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-10 inline-block border-b border-bone/30 pb-1 text-[10px] uppercase tracking-[0.35em] text-bone transition-colors hover:border-marquee hover:text-marquee"
-            >
-              Full review on Letterboxd →
-            </a>
-          </Reveal>
-        </section>
-      ) : (
-        <p className="py-24 text-center text-[12px] tracking-[0.1em] text-smoke">[ projector warming up — no films logged yet ]</p>
-      )}
-
-      {shelf.length > 0 ? (
-        <section className="mx-auto mt-32 max-w-6xl px-6">
-          <Reveal>
-            <div className="mb-8 flex items-end justify-between gap-6 border-b border-ash/60 pb-4">
-              <p className="text-[10px] uppercase tracking-[0.42em] text-smoke">The collection</p>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-ash">Hover a spine</p>
-            </div>
-            <CriterionShelf films={shelf} />
-          </Reveal>
-        </section>
-      ) : null}
-
-      <ChapterCard id="chapter-two" number="Two" title="The Sound" note="Original motion picture soundtrack" />
-
-      <section className="mx-auto max-w-3xl px-6">
-        <Reveal>
-          <CreditsRoll tracks={tracks} />
-        </Reveal>
-      </section>
-
-      <ChapterCard id="chapter-three" number="Three" title="The Words" note="Pages from the screenplay" />
-
-      <section className="px-4">
-        <Reveal>
-          <div className="mx-auto max-w-[700px] bg-bone px-8 py-14 font-script text-[15px] leading-[1.65] text-ink shadow-[0_50px_100px_-40px_rgba(0,0,0,0.9)] sm:px-16 sm:py-20 sm:text-[16px]">
-            <p className="text-right">1.</p>
-            <p className="mt-6">FADE IN:</p>
-
-            {scenes.length === 0 ? (
-              <p className="mt-8">The page is blank. The writer stares at it. Something is coming.</p>
-            ) : (
-              scenes.map((scene, index) => (
-                <div key={scene.id} className="mt-10">
-                  <Link href={`/blog/${scene.slug}`} className="group flex gap-4 font-bold uppercase">
-                    <span className="w-6 flex-none">{index + 1}</span>
-                    <span className="underline-offset-4 group-hover:underline">
-                      INT. &ldquo;{scene.title}&rdquo; — {formatLongDate(scene.publishedAt)?.toUpperCase() ?? "UNDATED"}
-                    </span>
-                  </Link>
-                  {scene.action ? <p className="mt-4 pl-10">{scene.action}</p> : null}
-                  {index < scenes.length - 1 ? <p className="mt-6 text-right">CUT TO:</p> : null}
-                </div>
-              ))
-            )}
-
-            <p className="mt-12 text-right">FADE OUT.</p>
-            <p className="mt-14 text-center">
-              <Link href="/blog" className="underline underline-offset-4 hover:no-underline">
-                READ THE FULL SCREENPLAYS
-              </Link>
-            </p>
-          </div>
-        </Reveal>
-      </section>
-
-      <section className="flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-        <Reveal>
-          <p className="font-chapter text-[clamp(72px,14vw,200px)] uppercase leading-none text-bone">The End</p>
-        </Reveal>
-        <Reveal delay={400}>
-          <p className="mt-6 text-[10px] uppercase tracking-[0.42em] text-smoke">…until the next one</p>
-        </Reveal>
+        <div aria-hidden className="relative -mx-8 h-32 overflow-hidden">
+          <div className="synth-grid absolute inset-x-[-30%] top-0 h-[260%]" />
+        </div>
       </section>
     </>
   );

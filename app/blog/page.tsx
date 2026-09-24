@@ -4,8 +4,8 @@ import { getPublishedPosts } from "@/lib/notion/posts";
 import { formatLongDate } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "The Screenplays",
-  description: "Writing from JT"
+  title: "Writing",
+  description: "Every dispatch from JT"
 };
 
 export const revalidate = 300;
@@ -14,31 +14,27 @@ export default async function BlogIndexPage() {
   const posts = await getPublishedPosts();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pb-24 pt-36">
-      <header className="border-b border-ash/60 pb-10">
-        <p className="text-[10px] uppercase tracking-[0.42em] text-marquee">Writing</p>
-        <h1 className="mt-4 font-criterion text-[clamp(52px,8vw,112px)] font-medium leading-[0.9] text-bone">The Screenplays</h1>
-        <p className="mt-5 max-w-[46ch] font-criterion text-[20px] italic text-bone/70">Drafts, notes, and whatever else made it to the page.</p>
-      </header>
+    <div className="mx-auto max-w-4xl py-12">
+      <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Writing</span>
+      <h1 className="mt-4 text-[clamp(44px,7vw,88px)] font-bold leading-[0.95] tracking-[-0.02em]">All the dispatches</h1>
+      <p className="mt-3 text-[20px] italic text-graphite">Every story filed from the desk, newest first.</p>
 
       {posts.length === 0 ? (
-        <p className="py-24 text-center text-[12px] tracking-[0.1em] text-smoke">[ the page is blank — something is coming ]</p>
+        <p className="mt-12 border-y-2 border-ink py-10 text-center text-[20px] italic text-graphite">The presses are warming up.</p>
       ) : (
-        <div className="mt-14 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3">
+        <ol className="mt-10 divide-y divide-ink/20 border-y-2 border-ink">
           {posts.map((post) => (
-            <Link key={post.id} href={`/blog/${post.slug}`} className="group block">
-              <div className="flex aspect-[8.5/11] flex-col bg-bone p-8 font-script text-ink shadow-[0_40px_70px_-35px_rgba(0,0,0,0.9)] transition-transform duration-500 group-hover:-translate-y-2 group-hover:-rotate-1">
-                <div className="flex flex-1 flex-col items-center justify-center text-center">
-                  <p className="text-[17px] font-bold uppercase leading-snug underline underline-offset-4">{post.title}</p>
-                  <p className="mt-8 text-[13px]">written by</p>
-                  <p className="mt-2 text-[13px]">JT</p>
-                </div>
-                <p className="text-[11px]">{formatLongDate(post.publishedAt) ?? "Undated draft"}</p>
+            <li key={post.id} className="grid gap-2 py-7 md:grid-cols-[170px_minmax(0,1fr)] md:gap-8">
+              <p className="pt-2 font-pixel text-[10px] uppercase text-graphite">{formatLongDate(post.publishedAt) ?? "Undated"}</p>
+              <div>
+                <Link href={`/blog/${post.slug}`} className="text-[clamp(28px,3.4vw,40px)] font-bold leading-tight decoration-holo-pink decoration-4 underline-offset-4 hover:underline">
+                  {post.title}
+                </Link>
+                {post.excerpt ? <p className="mt-2 text-[18px] italic leading-snug text-graphite">{post.excerpt}</p> : null}
               </div>
-              {post.excerpt ? <p className="mt-5 font-criterion text-[18px] italic leading-snug text-bone/70">{post.excerpt}</p> : null}
-            </Link>
+            </li>
           ))}
-        </div>
+        </ol>
       )}
     </div>
   );

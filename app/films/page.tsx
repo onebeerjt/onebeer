@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import CopyFilmTitlesButton from "@/components/copy-film-titles-button";
+import { CriterionShelf } from "@/components/criterion-shelf";
 import { getCatalogue } from "@/lib/letterboxd/catalogue";
-import { formatShortDate, padSpine } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "The Collection",
@@ -10,52 +10,34 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+const PER_SHELF = 20;
+
 export default async function FilmsPage() {
   const films = await getCatalogue();
+  const shelves = Array.from({ length: Math.ceil(films.length / PER_SHELF) }, (_, i) => films.slice(i * PER_SHELF, (i + 1) * PER_SHELF));
 
   return (
-    <div className="mx-auto max-w-7xl px-6 pb-24 pt-36">
-      <header className="flex flex-col gap-8 border-b border-ash/60 pb-10 md:flex-row md:items-end md:justify-between">
+    <div className="py-12">
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.42em] text-marquee">The One Beer Collection</p>
-          <h1 className="mt-4 font-criterion text-[clamp(52px,8vw,112px)] font-medium leading-[0.9] text-bone">The Catalogue</h1>
-          <p className="mt-5 max-w-[46ch] font-criterion text-[20px] italic text-bone/70">
-            {films.length} films, pulled straight from the Letterboxd diary. Spine numbers count up as the collection grows.
+          <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Arts &amp; culture</span>
+          <h1 className="mt-4 text-[clamp(44px,7vw,88px)] font-bold leading-[0.95] tracking-[-0.02em]">The Collection</h1>
+          <p className="mt-3 max-w-[52ch] text-[20px] italic text-graphite">
+            {films.length} films from the Letterboxd diary, newest on the top shelf. Hover a spine to pull it out.
           </p>
         </div>
         <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
-      </header>
+      </div>
 
       {films.length === 0 ? (
-        <p className="py-24 text-center text-[12px] tracking-[0.1em] text-smoke">[ the vault is empty ]</p>
+        <p className="mt-12 border-y-2 border-ink py-10 text-center text-[20px] italic text-graphite">The shelf is empty.</p>
       ) : (
-        <div className="mt-14 grid grid-cols-2 gap-x-5 gap-y-14 sm:grid-cols-3 lg:grid-cols-5">
-          {films.map((film) => (
-            <a key={`${film.letterboxdUrl}-${film.spine}`} href={film.letterboxdUrl} target="_blank" rel="noreferrer" className="group block">
-              <div className="relative aspect-[2/3] overflow-hidden border border-bone/10 bg-ash/30">
-                {film.posterUrl ? (
-                  <div
-                    className="h-full w-full bg-cover bg-center grayscale transition-[filter,transform] duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
-                    style={{ backgroundImage: `url(${film.posterUrl})` }}
-                    role="img"
-                    aria-label={`${film.title} poster`}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center p-4 text-center font-criterion text-[20px] italic text-bone/50">
-                    {film.title}
-                  </div>
-                )}
-                <span className="absolute left-2 top-2 bg-ink/80 px-1.5 py-0.5 text-[9px] tracking-[0.18em] text-bone/80">
-                  No. {padSpine(film.spine)}
-                </span>
-              </div>
-              <p className="mt-3 font-criterion text-[19px] italic leading-tight text-bone transition-colors group-hover:text-marquee">{film.title}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-smoke">
-                {[film.year, formatShortDate(film.watchedAt)].filter(Boolean).join(" · ")}
-              </p>
-              {film.rating ? <p className="mt-1.5 text-[13px] tracking-[0.1em] text-marquee">{film.rating}</p> : null}
-              {film.reviewSnippet ? <p className="mt-2 line-clamp-3 text-[12px] leading-relaxed text-bone/60">{film.reviewSnippet}</p> : null}
-            </a>
+        <div className="-mx-4 mt-10 space-y-12 bg-ink px-4 py-12 sm:-mx-8 sm:px-8">
+          {shelves.map((shelf, index) => (
+            <div key={index}>
+              <CriterionShelf films={shelf} showCatalogueLink={false} />
+              <div aria-hidden className="holo-bg -mt-6 h-2" />
+            </div>
           ))}
         </div>
       )}

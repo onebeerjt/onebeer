@@ -23,7 +23,7 @@ export default function CopyFilmTitlesButton({ titles }: { titles: string[] }) {
       type="button"
       onClick={handleCopy}
       disabled={!textToCopy}
-      className="self-start border border-bone/30 px-5 py-3 text-[10px] uppercase tracking-[0.35em] text-bone transition-colors hover:border-marquee hover:text-marquee disabled:cursor-not-allowed disabled:opacity-40 md:self-auto"
+      className="self-start border-2 border-ink bg-white px-4 py-3 font-pixel text-[10px] uppercase text-ink shadow-[4px_4px_0_#0a0a0a] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#ff4fd8] disabled:cursor-not-allowed disabled:opacity-40 md:self-auto"
     >
       {status === "copied" ? "Copied to clipboard" : status === "error" ? "Couldn't copy — retry" : "Copy all titles"}
     </button>

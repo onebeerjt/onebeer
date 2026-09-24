@@ -4,7 +4,7 @@ import { padSpine } from "@/lib/format";
 
 const FALLBACK_TONES = ["#161616", "#2a2219", "#1b2320", "#3a1614", "#22201d"];
 
-export function CriterionShelf({ films }: { films: CatalogueFilm[] }) {
+export function CriterionShelf({ films, showCatalogueLink = true }: { films: CatalogueFilm[]; showCatalogueLink?: boolean }) {
   return (
     <div className="flex items-end gap-[3px] overflow-x-auto pb-6 [scrollbar-width:thin]">
       {films.map((film, index) => (
@@ -50,14 +50,16 @@ export function CriterionShelf({ films }: { films: CatalogueFilm[] }) {
         </a>
       ))}
 
-      <Link
-        href="/films"
-        className="flex h-[380px] w-[140px] flex-none flex-col items-center justify-center gap-3 border border-ash px-4 text-center text-[10px] uppercase tracking-[0.3em] text-smoke transition-colors hover:border-marquee hover:text-marquee"
-      >
-        <span>The full</span>
-        <span>catalogue</span>
-        <span aria-hidden>→</span>
-      </Link>
+      {showCatalogueLink ? (
+        <Link
+          href="/films"
+          className="flex h-[380px] w-[140px] flex-none flex-col items-center justify-center gap-3 border border-ash px-4 text-center text-[10px] uppercase tracking-[0.3em] text-smoke transition-colors hover:border-marquee hover:text-marquee"
+        >
+          <span>The full</span>
+          <span>catalogue</span>
+          <span aria-hidden>→</span>
+        </Link>
+      ) : null}
     </div>
   );
 }

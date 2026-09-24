@@ -29,77 +29,89 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   return { title: post.title, description: post.excerpt };
 }
 
-function renderBlock(block: ContentBlock) {
-  if (block.type === "heading_1" || block.type === "heading_2" || block.type === "heading_3") {
-    return <h2 className="mt-4 font-bold uppercase">{block.text}</h2>;
+function renderBlock(block: ContentBlock, dropCap: boolean) {
+  if (block.type === "heading_1" || block.type === "heading_2") {
+    return <h2 className="pt-4 text-[30px] font-bold leading-tight">{block.text}</h2>;
+  }
+
+  if (block.type === "heading_3") {
+    return <h3 className="pt-2 text-[24px] font-bold leading-tight">{block.text}</h3>;
   }
 
   if (block.type === "quote") {
     return (
-      <div className="mx-auto max-w-[36ch]">
-        <p className="text-center uppercase">JT</p>
-        <p className="mt-1">{block.text}</p>
-      </div>
+      <blockquote className="my-6">
+        <div className="holo-bg h-1" />
+        <p className="py-5 text-center text-[clamp(24px,3vw,32px)] italic leading-snug">&ldquo;{block.text}&rdquo;</p>
+        <div className="holo-bg h-1" />
+      </blockquote>
     );
   }
 
   if (block.type === "bulleted_list_item" || block.type === "numbered_list_item") {
-    return <p className="pl-6">— {block.text}</p>;
+    return (
+      <p className="relative pl-7">
+        <span aria-hidden className="absolute left-0 text-holo-pink">
+          ✦
+        </span>
+        {block.text}
+      </p>
+    );
   }
 
   if (block.type === "code") {
-    return <pre className="overflow-x-auto whitespace-pre-wrap border border-ink/20 p-4 text-[13px]">{block.text}</pre>;
+    return <pre className="overflow-x-auto border-2 border-ink bg-ink p-4 text-[14px] text-paper">{block.text}</pre>;
   }
 
   if (block.type === "image" && block.url) {
     return (
       <figure className="space-y-2">
-        <Image src={block.url} alt={block.text || "Still from the post"} width={1200} height={675} unoptimized className="w-full grayscale" />
-        {block.text ? <figcaption className="text-[12px] uppercase">{block.text}</figcaption> : null}
+        <Image
+          src={block.url}
+          alt={block.text || "Photo from the story"}
+          width={1400}
+          height={800}
+          unoptimized
+          className="w-full border-2 border-ink grayscale transition-[filter] duration-700 hover:grayscale-0"
+        />
+        {block.text ? <figcaption className="font-pixel text-[10px] uppercase text-graphite">{block.text}</figcaption> : null}
       </figure>
     );
   }
 
-  return <p>{block.text}</p>;
+  return <p className={dropCap ? "drop-cap" : undefined}>{block.text}</p>;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getPostBySlug(params.slug);
   if (!post) notFound();
 
-  const content = (post.content as ContentBlock[]) ?? [];
+  const content = ((post.content as ContentBlock[]) ?? []).filter((block) => block.text || block.url);
+  const firstParagraphId = content.find((block) => block.type === "paragraph")?.id;
 
   return (
-    <div className="px-4 pb-24 pt-36">
-      <article className="mx-auto max-w-[720px] bg-bone px-8 py-16 font-script text-[15px] leading-[1.7] text-ink shadow-[0_50px_100px_-40px_rgba(0,0,0,0.9)] sm:px-20 sm:py-24 sm:text-[16px]">
-        <header className="pb-16 text-center">
-          <h1 className="text-[18px] font-bold uppercase leading-snug underline underline-offset-4 sm:text-[20px]">{post.title}</h1>
-          <p className="mt-10">written by</p>
-          <p className="mt-2">JT</p>
-          <p className="mt-10 text-[12px]">{formatLongDate(post.publishedAt) ?? "Undated draft"}</p>
-        </header>
+    <article className="mx-auto max-w-[760px] py-12">
+      <Link href="/blog" className="font-pixel text-[10px] uppercase text-graphite hover:text-ink">
+        ← All dispatches
+      </Link>
+      <div className="mt-6">
+        <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Dispatch</span>
+      </div>
+      <h1 className="mt-4 text-[clamp(40px,6vw,76px)] font-bold leading-[0.98] tracking-[-0.02em]">{post.title}</h1>
+      {post.excerpt ? <p className="mt-4 text-[22px] italic leading-snug text-graphite">{post.excerpt}</p> : null}
+      <p className="mt-5 border-y border-ink/25 py-2 font-pixel text-[10px] uppercase">By JT · {formatLongDate(post.publishedAt) ?? "Undated"} · Miami</p>
 
-        <p>FADE IN:</p>
+      {content.length > 0 ? (
+        <div className="mt-8 space-y-5 text-[19px] leading-[1.7]">
+          {content.map((block) => (
+            <div key={block.id}>{renderBlock(block, block.id === firstParagraphId)}</div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-8 text-[19px] italic text-graphite">This story is still being filed.</p>
+      )}
 
-        {content.length > 0 ? (
-          <div className="mt-8 space-y-5">
-            {content.map((block) => (
-              <div key={block.id}>{renderBlock(block)}</div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-8">The page is blank. The writer stares at it.</p>
-        )}
-
-        <p className="mt-14 text-right">FADE OUT.</p>
-        <p className="mt-6 text-center font-bold">THE END</p>
-      </article>
-
-      <p className="mt-12 text-center">
-        <Link href="/blog" className="text-[10px] uppercase tracking-[0.35em] text-smoke transition-colors hover:text-marquee">
-          ← Back to the screenplays
-        </Link>
-      </p>
-    </div>
+      <p className="mt-14 text-center font-pixel text-[11px] uppercase tracking-[0.3em]">— 30 —</p>
+    </article>
   );
 }
