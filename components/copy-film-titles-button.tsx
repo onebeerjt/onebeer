@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-type CopyFilmTitlesButtonProps = {
-  titles: string[];
-};
-
-export default function CopyFilmTitlesButton({ titles }: CopyFilmTitlesButtonProps) {
+export default function CopyFilmTitlesButton({ titles }: { titles: string[] }) {
   const [status, setStatus] = useState<"idle" | "copied" | "error">("idle");
   const textToCopy = useMemo(() => titles.join("\n"), [titles]);
 
@@ -16,11 +12,10 @@ export default function CopyFilmTitlesButton({ titles }: CopyFilmTitlesButtonPro
     try {
       await navigator.clipboard.writeText(textToCopy);
       setStatus("copied");
-      window.setTimeout(() => setStatus("idle"), 1800);
     } catch {
       setStatus("error");
-      window.setTimeout(() => setStatus("idle"), 1800);
     }
+    window.setTimeout(() => setStatus("idle"), 1800);
   }
 
   return (
@@ -28,24 +23,9 @@ export default function CopyFilmTitlesButton({ titles }: CopyFilmTitlesButtonPro
       type="button"
       onClick={handleCopy}
       disabled={!textToCopy}
-      className="inline-flex items-center gap-2 rounded-md border border-[#262b33] bg-[#14171c] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c9c5bc] transition-colors hover:bg-[#1b1f26] disabled:cursor-not-allowed disabled:opacity-50"
-      aria-label="Copy film titles"
-      title={status === "copied" ? "Copied" : "Copy titles"}
+      className="self-start border border-bone/30 px-5 py-3 text-[10px] uppercase tracking-[0.35em] text-bone transition-colors hover:border-marquee hover:text-marquee disabled:cursor-not-allowed disabled:opacity-40 md:self-auto"
     >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="9" y="9" width="11" height="11" rx="2" ry="2" />
-        <rect x="4" y="4" width="11" height="11" rx="2" ry="2" />
-      </svg>
-      {status === "copied" ? "Copied" : status === "error" ? "Retry" : "Copy titles"}
+      {status === "copied" ? "Copied to clipboard" : status === "error" ? "Couldn't copy — retry" : "Copy all titles"}
     </button>
   );
 }

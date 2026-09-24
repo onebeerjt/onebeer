@@ -1,133 +1,61 @@
-import { getAllFilms } from "@/lib/letterboxd/archive";
+import type { Metadata } from "next";
 import CopyFilmTitlesButton from "@/components/copy-film-titles-button";
+import { getCatalogue } from "@/lib/letterboxd/catalogue";
+import { formatShortDate, padSpine } from "@/lib/format";
+
+export const metadata: Metadata = {
+  title: "The Collection",
+  description: "Every film JT has logged on Letterboxd."
+};
 
 export const revalidate = 3600;
 
-function dateKey(value: string | undefined) {
-  if (!value) return "unknown";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "unknown";
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York"
-  }).format(date);
-}
-
-function normalizeTitle(title: string, year?: string) {
-  const cleaned = title
-    .toLowerCase()
-    .replace(/\(\d{4}\)/g, "")
-    .replace(/,\s*\d{4}/g, "")
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!year) return cleaned;
-  return cleaned.replace(new RegExp(`\\b${year}\\b`, "g"), "").trim();
-}
-
-function scoreFilm(film: Awaited<ReturnType<typeof getAllFilms>>[number]) {
-  let score = 0;
-  if (film.posterUrl) score += 3;
-  if (film.reviewSnippet) score += 2;
-  if (film.rating) score += 1;
-  return score;
-}
-
-function dedupeFilms(films: Awaited<ReturnType<typeof getAllFilms>>) {
-  const grouped = new Map<string, typeof films>();
-
-  for (const film of films) {
-    const year = film.year ?? "";
-    const title = normalizeTitle(film.title, year);
-    const key = `${title}|${year}|${dateKey(film.watchedAt)}`;
-    const list = grouped.get(key) ?? [];
-    list.push(film);
-    grouped.set(key, list);
-  }
-
-  const merged: typeof films = [];
-  for (const list of grouped.values()) {
-    if (list.length === 1) {
-      merged.push(list[0]);
-      continue;
-    }
-    const best = list.reduce((acc, next) => (scoreFilm(next) > scoreFilm(acc) ? next : acc), list[0]);
-    merged.push(best);
-  }
-
-  return merged;
-}
-
-function formatPlayedAt(value: string | undefined) {
-  if (!value) {
-    return "Recently";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "Recently";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "America/New_York"
-  }).format(date);
-}
-
 export default async function FilmsPage() {
-  const films = dedupeFilms(await getAllFilms(500));
+  const films = await getCatalogue();
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-2">
-        <h1 className="font-serif text-3xl font-semibold text-[#f2efe9] sm:text-5xl">Films</h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="max-w-2xl text-sm text-[#94989f]">
-            Everything pulled from JT&apos;s Letterboxd feed. New logs appear automatically.
+    <div className="mx-auto max-w-7xl px-6 pb-24 pt-36">
+      <header className="flex flex-col gap-8 border-b border-ash/60 pb-10 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.42em] text-marquee">The One Beer Collection</p>
+          <h1 className="mt-4 font-criterion text-[clamp(52px,8vw,112px)] font-medium leading-[0.9] text-bone">The Catalogue</h1>
+          <p className="mt-5 max-w-[46ch] font-criterion text-[20px] italic text-bone/70">
+            {films.length} films, pulled straight from the Letterboxd diary. Spine numbers count up as the collection grows.
           </p>
-          <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
         </div>
-      </section>
+        <CopyFilmTitlesButton titles={films.map((film) => film.title)} />
+      </header>
 
       {films.length === 0 ? (
-        <div className="card border-dashed p-6">
-          <p className="text-sm leading-relaxed text-[#94989f]">No Letterboxd activity found yet.</p>
-        </div>
+        <p className="py-24 text-center text-[12px] tracking-[0.1em] text-smoke">[ the vault is empty ]</p>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
-          {films.map((film, index) => (
-            <article
-              key={`${film.letterboxdUrl}-${index}`}
-              className="card card-hover group relative flex items-start gap-4 p-4 transition-transform duration-200 md:hover:-translate-y-1 md:hover:shadow-xl"
-            >
-              <div className="h-20 w-14 flex-none overflow-hidden rounded-md border border-[#262b33] bg-[#1b1f26]">
+        <div className="mt-14 grid grid-cols-2 gap-x-5 gap-y-14 sm:grid-cols-3 lg:grid-cols-5">
+          {films.map((film) => (
+            <a key={`${film.letterboxdUrl}-${film.spine}`} href={film.letterboxdUrl} target="_blank" rel="noreferrer" className="group block">
+              <div className="relative aspect-[2/3] overflow-hidden border border-bone/10 bg-ash/30">
                 {film.posterUrl ? (
                   <div
-                    className="h-full w-full bg-cover bg-center transition-transform duration-200 md:group-hover:scale-110"
+                    className="h-full w-full bg-cover bg-center grayscale transition-[filter,transform] duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
                     style={{ backgroundImage: `url(${film.posterUrl})` }}
+                    role="img"
                     aria-label={`${film.title} poster`}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] text-[#6f7480]">No Art</div>
+                  <div className="flex h-full w-full items-center justify-center p-4 text-center font-criterion text-[20px] italic text-bone/50">
+                    {film.title}
+                  </div>
                 )}
+                <span className="absolute left-2 top-2 bg-ink/80 px-1.5 py-0.5 text-[9px] tracking-[0.18em] text-bone/80">
+                  No. {padSpine(film.spine)}
+                </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <a
-                  href={film.letterboxdUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="truncate text-base font-semibold text-[#f2efe9] hover:text-[#ff8a3d] hover:underline"
-                >
-                  {film.title}
-                  {film.year ? ` (${film.year})` : ""}
-                  {film.rating ? ` - ${film.rating}` : ""}
-                </a>
-                <p className="font-mono text-xs text-[#6f7480]">{film.watchedAt ? formatPlayedAt(film.watchedAt) : "Recently"}</p>
-                {film.reviewSnippet ? <p className="mt-2 text-sm text-[#94989f]">{film.reviewSnippet}</p> : null}
-              </div>
-            </article>
+              <p className="mt-3 font-criterion text-[19px] italic leading-tight text-bone transition-colors group-hover:text-marquee">{film.title}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-smoke">
+                {[film.year, formatShortDate(film.watchedAt)].filter(Boolean).join(" · ")}
+              </p>
+              {film.rating ? <p className="mt-1.5 text-[13px] tracking-[0.1em] text-marquee">{film.rating}</p> : null}
+              {film.reviewSnippet ? <p className="mt-2 line-clamp-3 text-[12px] leading-relaxed text-bone/60">{film.reviewSnippet}</p> : null}
+            </a>
           ))}
         </div>
       )}
