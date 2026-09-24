@@ -26,7 +26,7 @@ function firstParagraph(content: unknown) {
 function dedupeTracks(tracks: NowPlayingTrack[]) {
   const seen = new Set<string>();
   return tracks.filter((track) => {
-    const key = `${track.track}|${track.artist}|${track.playedAt ?? "now"}`;
+    const key = `${track.track}|${track.artist}`.toLowerCase();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
