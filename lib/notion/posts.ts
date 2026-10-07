@@ -21,24 +21,20 @@ type NotionQueryResponse = {
   results?: NotionPage[];
 };
 
+type NotionBlockPayload = {
+  rich_text?: NotionRichText[];
+  caption?: NotionRichText[];
+  url?: string;
+  type?: "external" | "file";
+  external?: { url?: string };
+  file?: { url?: string };
+};
+
 type NotionBlock = {
   id: string;
   type: string;
   has_children?: boolean;
-  paragraph?: { rich_text?: NotionRichText[] };
-  heading_1?: { rich_text?: NotionRichText[] };
-  heading_2?: { rich_text?: NotionRichText[] };
-  heading_3?: { rich_text?: NotionRichText[] };
-  quote?: { rich_text?: NotionRichText[] };
-  bulleted_list_item?: { rich_text?: NotionRichText[] };
-  numbered_list_item?: { rich_text?: NotionRichText[] };
-  code?: { rich_text?: NotionRichText[] };
-  image?: {
-    type?: "external" | "file";
-    external?: { url?: string };
-    file?: { url?: string };
-    caption?: NotionRichText[];
-  };
+  [blockType: string]: unknown;
 };
 
 type NotionBlockResponse = {
@@ -254,7 +250,13 @@ async function queryDatabase(): Promise<BlogPostSummary[]> {
   return (data.results ?? [])
     .filter(isPublished)
     .map(toSummary)
-    .filter((item) => item.title.trim().length > 0);
+    .filter((item) => item.title.trim().length > 0)
+    .sort((a, b) => publishedTime(b) - publishedTime(a));
+}
+
+function publishedTime(post: BlogPostSummary) {
+  const time = post.publishedAt ? new Date(post.publishedAt).getTime() : NaN;
+  return Number.isNaN(time) ? 0 : time;
 }
 
 export async function getNotionDebugInfo(): Promise<NotionDebugInfo> {
@@ -314,90 +316,61 @@ export async function getNotionDebugInfo(): Promise<NotionDebugInfo> {
   };
 }
 
-function extractBlockText(block: NotionBlock) {
-  switch (block.type) {
-    case "paragraph":
-      return richTextToPlainText(block.paragraph?.rich_text);
-    case "heading_1":
-      return richTextToPlainText(block.heading_1?.rich_text);
-    case "heading_2":
-      return richTextToPlainText(block.heading_2?.rich_text);
-    case "heading_3":
-      return richTextToPlainText(block.heading_3?.rich_text);
-    case "quote":
-      return richTextToPlainText(block.quote?.rich_text);
-    case "bulleted_list_item":
-      return richTextToPlainText(block.bulleted_list_item?.rich_text);
-    case "numbered_list_item":
-      return richTextToPlainText(block.numbered_list_item?.rich_text);
-    case "code":
-      return richTextToPlainText(block.code?.rich_text);
-    default:
-      return "";
-  }
+function payloadOf(block: NotionBlock) {
+  return (block[block.type] ?? {}) as NotionBlockPayload;
 }
+
+function blockText(block: NotionBlock) {
+  return richTextToPlainText(payloadOf(block).rich_text);
+}
+
+const MEDIA_TYPES = new Set(["video", "embed", "bookmark", "link_preview", "file", "pdf", "audio"]);
 
 function mapBlocksForDisplay(blocks: NotionBlock[]) {
   return blocks
     .map((block) => {
-      if (block.type === "image") {
-        const url =
-          block.image?.type === "external"
-            ? block.image?.external?.url
-            : block.image?.file?.url;
-        const caption = richTextToPlainText(block.image?.caption);
+      const payload = payloadOf(block);
+      const fileUrl = (payload.type === "external" ? payload.external?.url : payload.file?.url) ?? payload.url ?? "";
 
-        return {
-          id: block.id,
-          type: block.type,
-          text: caption,
-          url: (url ?? "").trim()
-        };
+      if (block.type === "image") {
+        return { id: block.id, type: "image", text: richTextToPlainText(payload.caption), url: fileUrl.trim() };
       }
 
-      return {
-        id: block.id,
-        type: block.type,
-        text: extractBlockText(block)
-      };
+      if (MEDIA_TYPES.has(block.type)) {
+        return { id: block.id, type: "link", text: richTextToPlainText(payload.caption), url: fileUrl.trim() };
+      }
+
+      if (block.type === "divider") {
+        return { id: block.id, type: "divider", text: "" };
+      }
+
+      return { id: block.id, type: block.type, text: blockText(block) };
     })
-    .filter((block) => (block.type === "image" ? (block.url ?? "").length > 0 : block.text.length > 0));
+    .filter((block) => {
+      if (block.type === "divider") return true;
+      if (block.type === "image" || block.type === "link") return (block.url ?? "").length > 0;
+      return block.text.length > 0;
+    });
 }
 
 function findSubjectFromBlocks(blocks: NotionBlock[]) {
   let firstParagraph = "";
 
   for (const block of blocks) {
-    if (block.type === "heading_1") {
-      const text = richTextToPlainText(block.heading_1?.rich_text);
-      if (text) {
-        return text;
-      }
-    }
-
-    if (block.type === "heading_2") {
-      const text = richTextToPlainText(block.heading_2?.rich_text);
-      if (text) {
-        return text;
-      }
-    }
-
-    if (block.type === "heading_3") {
-      const text = richTextToPlainText(block.heading_3?.rich_text);
-      if (text) {
-        return text;
-      }
+    if (block.type.startsWith("heading_")) {
+      const text = blockText(block);
+      if (text) return text;
     }
 
     if (!firstParagraph && block.type === "paragraph") {
-      firstParagraph = richTextToPlainText(block.paragraph?.rich_text);
+      firstParagraph = blockText(block);
     }
   }
 
   return firstParagraph;
 }
 
-async function getPageBlocks(pageId: string): Promise<NotionBlock[]> {
+async function getPageBlocks(pageId: string, depth = 0): Promise<NotionBlock[]> {
   const env = getNotionEnv();
   if (!env) {
     return [];
@@ -429,7 +402,19 @@ async function getPageBlocks(pageId: string): Promise<NotionBlock[]> {
     cursor = data.has_more ? (data.next_cursor ?? undefined) : undefined;
   } while (cursor);
 
-  return blocks;
+  if (depth >= 3) {
+    return blocks;
+  }
+
+  // Columns, toggles, callouts and synced blocks keep their content in child blocks.
+  const expanded: NotionBlock[] = [];
+  for (const block of blocks) {
+    expanded.push(block);
+    if (block.has_children && block.type !== "child_page" && block.type !== "child_database") {
+      expanded.push(...(await getPageBlocks(block.id, depth + 1)));
+    }
+  }
+  return expanded;
 }
 
 export async function getPublishedPosts(): Promise<BlogPostSummary[]> {

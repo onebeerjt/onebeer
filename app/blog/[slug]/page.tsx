@@ -63,6 +63,18 @@ function renderBlock(block: ContentBlock, dropCap: boolean) {
     return <pre className="overflow-x-auto border-2 border-ink bg-ink p-4 text-[14px] text-paper">{block.text}</pre>;
   }
 
+  if (block.type === "divider") {
+    return <hr className="my-6 border-t-2 border-dotted border-ink/30" />;
+  }
+
+  if (block.type === "link" && block.url) {
+    return (
+      <a href={block.url} target="_blank" rel="noreferrer" className="break-words font-semibold underline decoration-vice-pink decoration-2 underline-offset-4">
+        {block.text || block.url} ↗
+      </a>
+    );
+  }
+
   if (block.type === "image" && block.url) {
     return (
       <figure className="space-y-2">
@@ -86,7 +98,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const post = await getPostBySlug(params.slug);
   if (!post) notFound();
 
-  const content = ((post.content as ContentBlock[]) ?? []).filter((block) => block.text || block.url);
+  const content = ((post.content as ContentBlock[]) ?? []).filter((block) => block.text || block.url || block.type === "divider");
   const firstParagraphId = content.find((block) => block.type === "paragraph")?.id;
 
   return (
