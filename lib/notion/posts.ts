@@ -53,7 +53,6 @@ export type NotionDebugInfo = {
   message?: string;
   postCount?: number;
   postTitles?: string[];
-  blockTypes?: Record<string, string[]>;
 };
 
 function getNotionEnv() {
@@ -313,15 +312,7 @@ export async function getNotionDebugInfo(): Promise<NotionDebugInfo> {
     normalizedDatabaseId: normalized,
     queryOk: true,
     postCount: posts.length,
-    postTitles: posts.map((post) => post.title).slice(0, 10),
-    blockTypes: Object.fromEntries(
-      await Promise.all(
-        posts.slice(0, 5).map(async (post) => [
-          post.slug,
-          (await getPageBlocks(post.id)).map((block) => `${block.type}${block.has_children ? "+children" : ""}`)
-        ])
-      )
-    )
+    postTitles: posts.map((post) => post.title).slice(0, 10)
   };
 }
 
