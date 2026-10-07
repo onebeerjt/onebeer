@@ -4,7 +4,6 @@ import { SparkleCursor } from "@/components/sparkle-cursor";
 import { Ticker } from "@/components/ticker";
 import { getRecentTracks } from "@/lib/lastfm/now-playing";
 import { getCatalogue } from "@/lib/letterboxd/catalogue";
-import { getStatusInfo } from "@/lib/notion/status";
 import { cormorant, fraktur, news, pixel } from "@/lib/fonts";
 import "./globals.css";
 
@@ -33,7 +32,7 @@ const NAV = [
 ];
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [status, catalogue, tracks] = await Promise.all([getStatusInfo(), getCatalogue(), getRecentTracks(1)]);
+  const [catalogue, tracks] = await Promise.all([getCatalogue(), getRecentTracks(1)]);
 
   const today = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -46,7 +45,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const film = catalogue[0];
   const track = tracks[0];
   const tickerItems = [
-    status.note ? `Mood: ${status.note}` : null,
     film ? `Now showing: ${film.title}${film.year ? ` (${film.year})` : ""}${film.rating ? ` ${film.rating}` : ""}` : null,
     track ? `${track.isPlaying ? "Now spinning" : "Last spun"}: ${track.track} — ${track.artist}` : null,
     catalogue.length ? `${catalogue.length} films on the shelf` : null,
