@@ -48,7 +48,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     film ? `Now showing: ${film.title}${film.year ? ` (${film.year})` : ""}${film.rating ? ` ${film.rating}` : ""}` : null,
     track ? `${track.isPlaying ? "Now spinning" : "Last spun"}: ${track.track} — ${track.artist}` : null,
     catalogue.length ? `${catalogue.length} films on the shelf` : null,
-    "Miami based · cerveza fueled · vibe coded"
+    "Miami based · vibe coded"
   ].filter((item): item is string => Boolean(item));
 
   return (
@@ -68,7 +68,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Link href="/" className="masthead font-fraktur text-[clamp(46px,10vw,132px)] leading-[0.95]">
               One Beer
             </Link>
-            <p className="mt-3 text-[15px] italic text-graphite sm:text-[17px]">&ldquo;All the news that&apos;s fit to pour&rdquo; — thoughts &amp; streams on tap</p>
+            <p className="mt-3 text-[15px] italic text-graphite sm:text-[17px]">thoughts &amp; streams on tap</p>
           </header>
 
           <nav className="flex items-center justify-center gap-4 border-y-4 border-double border-ink py-2 font-pixel text-[10px] uppercase sm:gap-6 sm:text-[11px]">
@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="mx-auto mt-20 max-w-[1240px] px-4 pb-12 text-center sm:px-8">
           <div className="border-t-4 border-double border-ink pt-8">
             <p className="font-fraktur text-[34px] leading-none">One Beer</p>
-            <p className="mt-3 italic text-graphite">Miami based, cerveza fueled, vibe coded.</p>
+            <p className="mt-3 italic text-graphite">Miami based, vibe coded.</p>
             <p className="mt-4 font-pixel text-[9px] uppercase text-graphite">Printed daily in the metaverse · Written &amp; edited by JT · @onebeerjt</p>
           </div>
         </footer>
