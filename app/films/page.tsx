@@ -4,7 +4,7 @@ import { CriterionShelf } from "@/components/criterion-shelf";
 import { getCatalogue } from "@/lib/letterboxd/catalogue";
 
 export const metadata: Metadata = {
-  title: "The Collection",
+  title: "What I've Been Watching",
   description: "Every film JT has logged on Letterboxd."
 };
 
@@ -20,8 +20,8 @@ export default async function FilmsPage() {
     <div className="py-12">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Arts &amp; culture</span>
-          <h1 className="mt-4 text-[clamp(44px,7vw,88px)] font-bold leading-[0.95] tracking-[-0.02em]">The Collection</h1>
+          <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase">Movies</span>
+          <h1 className="mt-4 text-[clamp(44px,7vw,88px)] font-bold leading-[0.95] tracking-[-0.02em]">What I&apos;ve Been Watching</h1>
           <p className="mt-3 max-w-[52ch] text-[20px] italic text-graphite">
             {films.length} films from the Letterboxd diary, newest on the top shelf. Hover a spine to pull it out.
           </p>

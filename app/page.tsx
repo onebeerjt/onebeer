@@ -20,8 +20,8 @@ export default async function FrontPage() {
       <section className="relative -mx-4 mt-8 overflow-hidden bg-ink px-4 pt-10 text-bone sm:-mx-8 sm:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4 border-b-4 border-double border-bone/40 pb-4">
           <div>
-            <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase text-ink">Arts &amp; culture</span>
-            <h2 className="mt-3 text-[clamp(40px,5vw,66px)] font-bold leading-none">The Collection</h2>
+            <span className="holo-bg inline-block border border-ink px-2 py-0.5 font-pixel text-[10px] uppercase text-ink">Movies</span>
+            <h2 className="mt-3 text-[clamp(40px,5vw,66px)] font-bold leading-none">What I&apos;ve Been Watching</h2>
           </div>
           <Link href="/films" className="font-pixel text-[10px] uppercase text-bone/80 transition-colors hover:text-vice-pink">
             {catalogue.length} films on the shelf · browse all →
