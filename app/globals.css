@@ -144,9 +144,8 @@ body {
     transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
-  .spine:hover,
-  .spine:focus-visible {
-    width: 250px;
+  .spine-btn {
+    transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
   .spine .spine-poster {
@@ -154,18 +153,58 @@ body {
     transition: opacity 0.5s ease 0.1s;
   }
 
-  .spine:hover .spine-poster,
-  .spine:focus-visible .spine-poster {
-    opacity: 1;
-  }
-
   .spine .spine-label {
     transition: opacity 0.3s ease;
   }
 
-  .spine:hover .spine-label,
-  .spine:focus-visible .spine-label {
+  /* hover peek: closed spines only, and only on devices that really hover (no sticky taps) */
+  @media (hover: hover) {
+    .spine[data-open="false"]:hover {
+      width: 250px;
+    }
+
+    .spine[data-open="false"]:hover .spine-poster {
+      opacity: 1;
+    }
+
+    .spine[data-open="false"]:hover .spine-label {
+      opacity: 0;
+    }
+  }
+
+  .spine[data-open="false"]:has(.spine-btn:focus-visible) {
+    width: 250px;
+  }
+
+  .spine[data-open="false"] .spine-btn:focus-visible .spine-poster {
+    opacity: 1;
+  }
+
+  .spine[data-open="false"] .spine-btn:focus-visible .spine-label {
     opacity: 0;
+  }
+
+  /* the case interior: slides out from behind the spine once the width has opened */
+  .spine .spine-case {
+    visibility: hidden;
+    transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s linear 0.6s;
+  }
+
+  .spine .spine-case-inner {
+    opacity: 0;
+    transform: translateX(-18px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .spine[data-open="true"] .spine-case {
+    visibility: visible;
+    transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), visibility 0s;
+  }
+
+  .spine[data-open="true"] .spine-case-inner {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.45s ease 0.22s, transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) 0.18s;
   }
 }
 
@@ -181,8 +220,13 @@ body {
   }
 
   .spine,
+  .spine-btn,
   .spine .spine-poster,
-  .spine .spine-label {
+  .spine .spine-label,
+  .spine .spine-case,
+  .spine .spine-case-inner,
+  .spine[data-open="true"] .spine-case,
+  .spine[data-open="true"] .spine-case-inner {
     transition: none;
   }
 }
